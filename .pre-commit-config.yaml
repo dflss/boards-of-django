@@ -3,23 +3,40 @@ repos:
     rev: 5.10.1
     hooks:
       - id: isort
-        args: ["--profile", "black", "--filter-files", "--line-length", "79"]
+        args: ["--filter-files"]
+
 - repo: https://github.com/ambv/black
   rev: 22.8.0
   hooks:
     - id: black
-      args: [ --diff, --check ]
+      args: [--diff, --check]
+
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v0.981
   hooks:
     - id: mypy
-      exclude: ^tests/
-      args: [ --strict ]
+      additional_dependencies:
+        - django-stubs
+        - djangorestframework-stubs
+      args: [--strict]
+
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 5.0.4
     hooks:
     - id: flake8
+      additional_dependencies: ["Flake8-pyproject"]
+
 -   repo: https://github.com/guilatrova/tryceratops
     rev: v1.1.0
     hooks:
       - id: tryceratops
+
+-   repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.1.1
+    hooks:
+      - id: pydocstyle
+        name: pydocstyle
+        entry: pydocstyle
+        language: python
+        types: [ python ]
+        additional_dependencies: ["toml"]

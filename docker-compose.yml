@@ -1,0 +1,40 @@
+version: '3.10'
+
+services:
+  django:
+    build:
+      context: ./docker/django
+      dockerfile: Dockerfile
+    command: gunicorn boards_of_django.wsgi:application -w 2 -b :8000 --reload
+    env_file:
+      - ./.env
+    volumes:
+      - ".:/usr/src/app"
+    depends_on:
+      - db
+    networks:
+      - django
+  db:
+    image: postgres:12.0-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    networks:
+      - django
+  nginx:
+    build: ./docker/nginx
+    ports:
+      - 80:80
+    volumes:
+      - "./static:/usr/src/static"
+      - "./media:/usr/src/media"
+    depends_on:
+      - django
+    networks:
+      - django
+
+volumes:
+  postgres_data:
+networks:
+  django:
