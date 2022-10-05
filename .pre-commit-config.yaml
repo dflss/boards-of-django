@@ -18,6 +18,7 @@ repos:
       additional_dependencies:
         - django-stubs
         - djangorestframework-stubs
+        - psycopg2
       args: [--strict]
 
 -   repo: https://gitlab.com/pycqa/flake8
