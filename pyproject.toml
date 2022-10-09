@@ -1,0 +1,22 @@
+[tool.isort]
+line_length = 119
+profile = "black"
+skip = [".gitignore"]
+skip_glob = ["env/*"]
+
+[tool.black]
+line-length = 119
+include = '\.pyi?$'
+exclude = '(/(\.git|\.mypy_cache|\.pytest_cache|env)/|^migrations/)'
+
+[tool.flake8]
+max-line-length = 119
+exclude = [".git", ".mypy_cache", ".pytest_cache", "env", "migrations", "manage.py"]
+
+[tool.tryceratops]
+exclude = ["manage.py"]
+
+[tool.pydocstyle]
+inherit = false
+convention = "pep257"
+add-ignore = ["D104"]
