@@ -1,0 +1,21 @@
+name: Django application
+on: [push]
+jobs:
+  docker_build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Copy .env.example to .env
+      run: cp .env.example .env
+    - name: Build docker
+      run: docker-compose build
+    - name: Type check
+      run: docker-compose run django mypy --config mypy.ini boards_of_django/
+    - name: Run flake8
+      run: docker-compose run django flake8
+    - name: Run isort
+      run: docker-compose run django isort
+    - name: Run migrations
+      run: docker-compose run django python manage.py migrate
+#    - name: Run tests
+#      run: docker-compose run django pytest
