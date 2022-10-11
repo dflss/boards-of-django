@@ -11,12 +11,13 @@ exclude = '(/(\.git|\.mypy_cache|\.pytest_cache|env)/|^migrations/)'
 
 [tool.flake8]
 max-line-length = 119
-exclude = [".git", ".mypy_cache", ".pytest_cache", "env", "migrations", "manage.py"]
+exclude = [".git", ".mypy_cache", ".pytest_cache", "env", "*migrations*", "manage.py"]
 
 [tool.tryceratops]
 exclude = ["manage.py"]
+ignore = ["TC003"]
 
 [tool.pydocstyle]
 inherit = false
 convention = "pep257"
-add-ignore = ["D104"]
+add-ignore = ["D100", "D105", "D104", "D106"]
