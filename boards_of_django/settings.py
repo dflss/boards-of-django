@@ -24,8 +24,14 @@ DEBUG = int(os.environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", default="localhost").split()
 
+REST_FRAMEWORK = {"EXCEPTION_HANDLER": "common.utils.custom_exception_handler"}
 
 # Application definition
+
+LOCAL_APPS = [
+    "authentication.apps.AuthenticationConfig",
+    "common.apps.CommonConfig",
+]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -34,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    *LOCAL_APPS,
 ]
 
 MIDDLEWARE = [
@@ -102,6 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = "authentication.User"
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/

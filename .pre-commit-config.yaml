@@ -19,6 +19,8 @@ repos:
         - django-stubs
         - djangorestframework-stubs
         - psycopg2
+        - pytest
+        - pytest_factoryboy
       args: [--strict]
 
 -   repo: https://gitlab.com/pycqa/flake8
@@ -41,3 +43,4 @@ repos:
         language: python
         types: [ python ]
         additional_dependencies: ["toml"]
+        exclude: '^env/|tests|migrations|.git|.mypy_cache|pytest_cache|apps.py|factories.py|conftest.py'

@@ -17,5 +17,5 @@ jobs:
       run: docker-compose run django isort
     - name: Run migrations
       run: docker-compose run django python manage.py migrate
-#    - name: Run tests
-#      run: docker-compose run django pytest
+    - name: Run tests
+      run: docker-compose run django pytest
