@@ -28,101 +28,101 @@ def test_register_success(api_client: APIClient) -> None:
     assert User.objects.count() == 1
 
 
-_invalid_user_input_data = [
-    (
-        {
-            "email": "test@example.com",
-            "username": "test",
-            "password": "Str0ng!P@$$w0rd1",
-            "password2": "Str0ng!P@$$w0rd2",
-        },
-        status.HTTP_400_BAD_REQUEST,
-        {"password": ["Passwords do not match."]},
-        0,
-    ),
-    (
-        {
-            "email": "test@example.com",
-            "username": "test",
-            "password": "test",
-            "password2": "test",
-        },
-        status.HTTP_400_BAD_REQUEST,
-        {
-            "password": [
-                "This password is too short. It must contain at least 8 characters.",
-                "This password is too common.",
-            ]
-        },
-        0,
-    ),
-    (
-        {
-            "username": "test",
-            "password": "Str0ng!P@$$w0rd",
-            "password2": "Str0ng!P@$$w0rd",
-        },
-        status.HTTP_400_BAD_REQUEST,
-        {"email": ["This field is required."]},
-        0,
-    ),
-    (
-        {
-            "email": "test@example.com",
-            "password": "Str0ng!P@$$w0rd",
-            "password2": "Str0ng!P@$$w0rd",
-        },
-        status.HTTP_400_BAD_REQUEST,
-        {"username": ["This field is required."]},
-        0,
-    ),
-    (
-        {
-            "username": "test",
-            "email": "test@example.com",
-            "password2": "Str0ng!P@$$w0rd",
-        },
-        status.HTTP_400_BAD_REQUEST,
-        {"password": ["This field is required."]},
-        0,
-    ),
-    (
-        {
-            "email": "test@example.com",
-            "username": "test",
-            "password": "Str0ng!P@$$w0rd",
-        },
-        status.HTTP_400_BAD_REQUEST,
-        {"password2": ["This field is required."]},
-        0,
-    ),
-    (
-        {
-            "email": "test@example.com",
-            "username": "t",
-            "password": "Str0ng!P@$$w0rd",
-            "password2": "Str0ng!P@$$w0rd",
-        },
-        status.HTTP_400_BAD_REQUEST,
-        {"username": ["Username cannot be shorter than 3 characters."]},
-        0,
-    ),
-    (
-        {
-            "email": "test@example.com",
-            "username": 21 * "t",
-            "password": "Str0ng!P@$$w0rd",
-            "password2": "Str0ng!P@$$w0rd",
-        },
-        status.HTTP_400_BAD_REQUEST,
-        {"username": ["Username cannot be longer than 20 characters."]},
-        0,
-    ),
-]
-
-
 @pytest.mark.django_db
-@pytest.mark.parametrize("data, expected_status_code, response_json, user_count", _invalid_user_input_data)
+@pytest.mark.parametrize(
+    "data, expected_status_code, response_json, user_count",
+    [
+        (
+            {
+                "email": "test@example.com",
+                "username": "test",
+                "password": "Str0ng!P@$$w0rd1",
+                "password2": "Str0ng!P@$$w0rd2",
+            },
+            status.HTTP_400_BAD_REQUEST,
+            {"password": ["Passwords do not match."]},
+            0,
+        ),
+        (
+            {
+                "email": "test@example.com",
+                "username": "test",
+                "password": "test",
+                "password2": "test",
+            },
+            status.HTTP_400_BAD_REQUEST,
+            {
+                "password": [
+                    "This password is too short. It must contain at least 8 characters.",
+                    "This password is too common.",
+                ]
+            },
+            0,
+        ),
+        (
+            {
+                "username": "test",
+                "password": "Str0ng!P@$$w0rd",
+                "password2": "Str0ng!P@$$w0rd",
+            },
+            status.HTTP_400_BAD_REQUEST,
+            {"email": ["This field is required."]},
+            0,
+        ),
+        (
+            {
+                "email": "test@example.com",
+                "password": "Str0ng!P@$$w0rd",
+                "password2": "Str0ng!P@$$w0rd",
+            },
+            status.HTTP_400_BAD_REQUEST,
+            {"username": ["This field is required."]},
+            0,
+        ),
+        (
+            {
+                "username": "test",
+                "email": "test@example.com",
+                "password2": "Str0ng!P@$$w0rd",
+            },
+            status.HTTP_400_BAD_REQUEST,
+            {"password": ["This field is required."]},
+            0,
+        ),
+        (
+            {
+                "email": "test@example.com",
+                "username": "test",
+                "password": "Str0ng!P@$$w0rd",
+            },
+            status.HTTP_400_BAD_REQUEST,
+            {"password2": ["This field is required."]},
+            0,
+        ),
+        (
+            {
+                "email": "test@example.com",
+                "username": "t",
+                "password": "Str0ng!P@$$w0rd",
+                "password2": "Str0ng!P@$$w0rd",
+            },
+            status.HTTP_400_BAD_REQUEST,
+            {"username": ["Username cannot be shorter than 3 characters."]},
+            0,
+        ),
+        (
+            {
+                "email": "test@example.com",
+                "username": 21 * "t",
+                "password": "Str0ng!P@$$w0rd",
+                "password2": "Str0ng!P@$$w0rd",
+            },
+            status.HTTP_400_BAD_REQUEST,
+            {"username": ["Username cannot be longer than 20 characters."]},
+            0,
+        ),
+    ],
+)
 def test_register_validation_failed(
     api_client: APIClient,
     data: Annotated[Dict[str, str], pytest.fixture],
@@ -140,25 +140,23 @@ def test_register_validation_failed(
     assert User.objects.count() == user_count
 
 
-_existent_user_input_data = [
-    (
-        {"email": "test@example.com"},
-        status.HTTP_400_BAD_REQUEST,
-        {"email": ["User with this Email address already exists."]},
-        1,
-    ),
-    (
-        {"username": "test_user"},
-        status.HTTP_400_BAD_REQUEST,
-        {"username": ["User with this Username already exists."]},
-        1,
-    ),
-]
-
-
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "existent_user_data, expected_status_code, response_json, user_count", _existent_user_input_data
+    "existent_user_data, expected_status_code, response_json, user_count",
+    [
+        (
+            {"email": "test@example.com"},
+            status.HTTP_400_BAD_REQUEST,
+            {"email": ["User with this Email address already exists."]},
+            1,
+        ),
+        (
+            {"username": "test_user"},
+            status.HTTP_400_BAD_REQUEST,
+            {"username": ["User with this Username already exists."]},
+            1,
+        ),
+    ],
 )
 def test_register_user_not_unique(
     api_client: APIClient,
