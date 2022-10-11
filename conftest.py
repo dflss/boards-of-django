@@ -13,7 +13,7 @@ register(UserFactory)
 
 class APIClientWithUser(APIClient):
     def __init__(self, *args: Any, **kwargs: Any):
-        super(APIClientWithUser, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.user: User
 
 

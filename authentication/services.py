@@ -29,10 +29,25 @@ def create_user(
     password: str,
     password2: str,
 ) -> User:
-    """Create a new user instance.
+    """
+    Create a new user instance and save it in database.
 
     Before creation, password and username will be validated.
     Passwords must match and pass the default Django password validation. Username must contain 3-20 characters.
+
+    Parameters
+    ----------
+    email : User's email address
+    username : User's username
+    is_active : Indicates if user is active
+    is_admin : Indicates if user has administrative privileges
+    password : User's password
+    password2 : Password confirmation
+
+    Returns
+    -------
+    User
+
     """
     _validate_user_password(password=password, password2=password2)
     _validate_user_username(username=username)

@@ -21,11 +21,25 @@ class UserRegisterApi(APIView):
         password2 = serializers.CharField(required=True)
 
     def post(self, request: Request) -> Response:
-        """Create a new user.
+        """
+        Create a new user.
 
-        Return
+        Input is considered valid when:
+        - the password is non-trivial
+        - both passwords are equal
+        - e-mail format is correct
+        - e-mail is unique
+        - username is unique
+
+        Parameters
+        ----------
+        request : User's request
+
+        Returns
+        -------
+        HTTP response with code:
         - 201 if user was successfully created
-        - 400 if input validation failed.
+        - 400 if input validation failed
         """
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

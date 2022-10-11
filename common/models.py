@@ -2,12 +2,13 @@ from django.db import models
 from django.utils import timezone
 
 
-class BaseModel(models.Model):
-    """Define base model that can be inherited by other models.
+class TimestampedModel(models.Model):
+    """Base model class that allows to audit the timestamp when the object in database was created and modified.
 
-    Attributes:
-    created_at -- timestamp when the object was created
-    updated_at -- timestamp when the object last updated
+    Attributes
+    ----------
+    created_at : Timestamp when the object was created
+    updated_at : Timestamp when the object last updated
     """
 
     created_at = models.DateTimeField(db_index=True, default=timezone.now)

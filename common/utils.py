@@ -7,7 +7,7 @@ from rest_framework.serializers import as_serializer_error
 from rest_framework.views import exception_handler
 
 
-def custom_exception_handler(exc: Exception, ctx: Dict[str, Any]) -> Optional[Response]:
+def raise_django_exception_as_drf_exception(exc: Exception, ctx: Dict[str, Any]) -> Optional[Response]:
     """Create custom exception handler.
 
     Map between django.core.exceptions.ValidationError and

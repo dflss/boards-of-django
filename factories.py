@@ -10,5 +10,5 @@ class UserFactory(factory.django.DjangoModelFactory):  # type: ignore
         model = User
 
     username = factory.Sequence(lambda n: f"user_{n}")
-    email = factory.LazyAttribute(lambda n: "{}@example.com".format(n.username).lower())
+    email = factory.LazyAttribute(lambda n: f"{n.username}@example.com".lower())
     password = factory.LazyFunction(lambda: make_password("password"))

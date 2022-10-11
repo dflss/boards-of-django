@@ -24,7 +24,7 @@ DEBUG = int(os.environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", default="localhost").split()
 
-REST_FRAMEWORK = {"EXCEPTION_HANDLER": "common.utils.custom_exception_handler"}
+REST_FRAMEWORK = {"EXCEPTION_HANDLER": "common.utils.raise_django_exception_as_drf_exception"}
 
 # Application definition
 
