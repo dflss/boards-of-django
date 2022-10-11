@@ -138,3 +138,43 @@ def test_register_username_not_unique(api_client: APIClient) -> None:
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.json() == {"username": ["User with this Username already exists."]}  # type: ignore[attr-defined]
     assert User.objects.count() == 1
+
+
+@pytest.mark.django_db
+def test_register_username_too_short(api_client: APIClient) -> None:
+    assert User.objects.count() == 0
+
+    data = {
+        "email": "test@example.com",
+        "username": "t",
+        "password": "Str0ng!P@$$w0rd",
+        "password2": "Str0ng!P@$$w0rd",
+    }
+
+    response = api_client.post(register_url, data)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {  # type: ignore[attr-defined]
+        "username": ["Username cannot be shorter than 3 characters."]
+    }
+    assert User.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_register_username_too_long(api_client: APIClient) -> None:
+    assert User.objects.count() == 0
+
+    data = {
+        "email": "test@example.com",
+        "username": 21 * "t",
+        "password": "Str0ng!P@$$w0rd",
+        "password2": "Str0ng!P@$$w0rd",
+    }
+
+    response = api_client.post(register_url, data)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {  # type: ignore[attr-defined]
+        "username": ["Username cannot be longer than 20 characters."]
+    }
+    assert User.objects.count() == 0

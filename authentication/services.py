@@ -13,6 +13,13 @@ def _validate_user_password(*, password: str, password2: str) -> None:
         raise ValidationError({"password": e}) from e
 
 
+def _validate_user_username(*, username: str) -> None:
+    if len(username) < 3:
+        raise ValidationError({"username": "Username cannot be shorter than 3 characters."})
+    if len(username) > 20:
+        raise ValidationError({"username": "Username cannot be longer than 20 characters."})
+
+
 def create_user(
     *,
     email: str,
@@ -24,9 +31,11 @@ def create_user(
 ) -> User:
     """Create a new user instance.
 
-    Before creation, password will be validated. Passwords must match and pass the default Django password validation.
+    Before creation, password and username will be validated.
+    Passwords must match and pass the default Django password validation. Username must contain 3-20 characters.
     """
     _validate_user_password(password=password, password2=password2)
+    _validate_user_username(username=username)
 
     user = User.objects.create_user(
         email=email, username=username, is_active=is_active, is_admin=is_admin, password=password
