@@ -3,6 +3,7 @@ from typing import Annotated, Dict, List
 import pytest
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
 from authentication.models import User
@@ -10,6 +11,7 @@ from factories import UserFactory
 
 register_url = reverse("authentication:auth:register")
 login_url = reverse("authentication:auth:login")
+logout_url = reverse("authentication:auth:logout")
 
 
 @pytest.mark.django_db
@@ -208,3 +210,24 @@ def test_login(
     response = api_client.post(login_url, user_data)
 
     assert response.status_code == expected_status_code
+
+    if expected_status_code == status.HTTP_200_OK:
+        assert "token" in response.json()  # type: ignore[attr-defined]
+        assert Token.objects.count() == 1
+
+
+@pytest.mark.django_db
+def test_logout(
+    api_client: APIClient,
+) -> None:
+    UserFactory(username="test")
+
+    response_login = api_client.post(login_url, {"username": "test", "password": "password"})
+    assert Token.objects.count() == 1
+
+    token = response_login.json()["token"]  # type: ignore[attr-defined]
+    api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+    response = api_client.post(logout_url)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert Token.objects.count() == 0
