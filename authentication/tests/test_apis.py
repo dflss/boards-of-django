@@ -9,6 +9,7 @@ from authentication.models import User
 from factories import UserFactory
 
 register_url = reverse("authentication:auth:register")
+login_url = reverse("authentication:auth:login")
 
 
 @pytest.mark.django_db
@@ -181,3 +182,29 @@ def test_register_user_not_unique(
     assert response.status_code == expected_status_code
     assert response.json() == response_json  # type: ignore[attr-defined]
     assert User.objects.count() == user_count
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "user_data, expected_status_code",
+    [
+        (
+            {"username": "test", "password": "password"},
+            status.HTTP_200_OK,
+        ),
+        (
+            {"username": "test", "password": "wrong"},
+            status.HTTP_400_BAD_REQUEST,
+        ),
+    ],
+)
+def test_login(
+    api_client: APIClient,
+    user_data: Annotated[Dict[str, str], pytest.fixture],
+    expected_status_code: Annotated[int, pytest.fixture],
+) -> None:
+    UserFactory(username="test")
+
+    response = api_client.post(login_url, user_data)
+
+    assert response.status_code == expected_status_code

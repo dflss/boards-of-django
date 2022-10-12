@@ -24,13 +24,22 @@ DEBUG = int(os.environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", default="localhost").split()
 
-REST_FRAMEWORK = {"EXCEPTION_HANDLER": "common.utils.raise_django_exception_as_drf_exception"}
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+    ],
+    "EXCEPTION_HANDLER": "common.utils.raise_django_exception_as_drf_exception",
+}
 
 # Application definition
 
 LOCAL_APPS = [
     "authentication.apps.AuthenticationConfig",
     "common.apps.CommonConfig",
+]
+
+THIRD_PARTY_APPS = [
+    "rest_framework.authtoken",
 ]
 
 INSTALLED_APPS = [
@@ -41,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     *LOCAL_APPS,
+    *THIRD_PARTY_APPS,
 ]
 
 MIDDLEWARE = [
