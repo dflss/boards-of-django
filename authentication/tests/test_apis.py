@@ -9,9 +9,9 @@ from rest_framework.test import APIClient
 from authentication.models import User
 from factories import UserFactory
 
-register_url = reverse("authentication:auth:register")
-login_url = reverse("authentication:auth:login")
-logout_url = reverse("authentication:auth:logout")
+register_url = reverse("authentication:register")
+login_url = reverse("authentication:login")
+logout_url = reverse("authentication:logout")
 
 
 @pytest.mark.django_db
