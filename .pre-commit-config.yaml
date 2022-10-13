@@ -22,6 +22,7 @@ repos:
         - pytest
         - pytest_factoryboy
         - djangorestframework
+        - drf_yasg
       args: [--strict]
 
 -   repo: https://gitlab.com/pycqa/flake8
