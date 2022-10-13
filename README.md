@@ -4,6 +4,7 @@
 * [General info](#general-info)
 * [Getting started](#getting-started)
 * [Testing](#testing)
+* [Docs](#docs)
 * [How to contribute](#how-to-contribute)
 * [Status](#status)
 
@@ -21,13 +22,17 @@ docker-compose up --build
 docker-compose exec django python manage.py migrate
 ```
 
-Then, view the site at http://localhost/
+Then, view the site at [http://localhost/](http://localhost/)
 
 ## Testing
 
 ```
 docker-compose exec django pytest
 ```
+
+## Docs
+
+After building and running the project locally, the documentation can be found at: [http://localhost/swagger/](http://localhost/swagger/).
 
 ## How to contribute
 
