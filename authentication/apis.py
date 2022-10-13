@@ -33,10 +33,6 @@ class UserRegisterApi(APIView):
         - e-mail is unique
         - username is unique
 
-        Parameters
-        ----------
-        request : User's request
-
         Returns
         -------
         HTTP response with code:
@@ -52,16 +48,13 @@ class UserRegisterApi(APIView):
 
 
 class UserLoginApi(ObtainAuthToken):
-    """Provide authorization token."""
+    """Log the user in."""
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Create authorization token and assign it to the user.
+        """Log the user in by creating an authorization token and assigning it to the user.
 
-        The user must provide correct credentials (username and password).
-
-        Parameters
-        ----------
-        request : User's request. Data must contain username and password.
+        The user must provide correct credentials (username and password). In response, the user receives a token
+        which can be later used via Authorization: Token <token> header to authenticate to auth-protected endpoints.
 
         Returns
         -------
@@ -72,22 +65,16 @@ class UserLoginApi(ObtainAuthToken):
         Response body:
         - token : authorization token that was created
         """
-        response = super().post(request, *args, **kwargs)
-
-        return response
+        return super().post(request, *args, **kwargs)
 
 
 class UserLogoutApi(APIView):
-    """Delete authorization token that is attached to this request."""
+    """Log the user out."""
 
     permission_classes = (IsAuthenticated,)
 
     def post(self, request: Request) -> Response:
-        """Delete authorization token that is attached the user making request.
-
-        Parameters
-        ----------
-        request : User's request
+        """Log the user out by invalidating her/his authorization token.
 
         Returns
         -------
@@ -97,6 +84,4 @@ class UserLogoutApi(APIView):
         if hasattr(user, "auth_token"):
             user.auth_token.delete()  # type: ignore[union-attr]
 
-        response = Response()
-
-        return response
+        return Response(status=status.HTTP_200_OK)

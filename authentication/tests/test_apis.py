@@ -1,4 +1,4 @@
-from typing import Annotated, Dict, List
+from typing import Dict, List, Optional
 
 import pytest
 from django.urls import reverse
@@ -128,10 +128,10 @@ def test_register_success(api_client: APIClient) -> None:
 )
 def test_register_validation_failed(
     api_client: APIClient,
-    data: Annotated[Dict[str, str], pytest.fixture],
-    expected_status_code: Annotated[int, pytest.fixture],
-    response_json: Annotated[Dict[str, List[str]], pytest.fixture],
-    user_count: Annotated[int, pytest.fixture],
+    data: Dict[str, str],
+    expected_status_code: int,
+    response_json: Dict[str, List[str]],
+    user_count: int,
 ) -> None:
     assert User.objects.count() == user_count
 
@@ -163,10 +163,10 @@ def test_register_validation_failed(
 )
 def test_register_user_not_unique(
     api_client: APIClient,
-    existent_user_data: Annotated[Dict[str, str], pytest.fixture],
-    expected_status_code: Annotated[int, pytest.fixture],
-    response_json: Annotated[Dict[str, List[str]], pytest.fixture],
-    user_count: Annotated[int, pytest.fixture],
+    existent_user_data: Dict[str, str],
+    expected_status_code: int,
+    response_json: Dict[str, List[str]],
+    user_count: int,
 ) -> None:
     UserFactory(**existent_user_data)
 
@@ -202,8 +202,8 @@ def test_register_user_not_unique(
 )
 def test_login(
     api_client: APIClient,
-    user_data: Annotated[Dict[str, str], pytest.fixture],
-    expected_status_code: Annotated[int, pytest.fixture],
+    user_data: Dict[str, str],
+    expected_status_code: int,
 ) -> None:
     UserFactory(username="test")
 
@@ -214,16 +214,19 @@ def test_login(
     if expected_status_code == status.HTTP_200_OK:
         assert "token" in response.json()  # type: ignore[attr-defined]
         assert Token.objects.count() == 1
+    else:
+        assert response.json() == {  # type: ignore[attr-defined]
+            "non_field_errors": ["Unable to log in with provided credentials."]
+        }
 
 
 @pytest.mark.django_db
-def test_logout(
+def test_logout_success(
     api_client: APIClient,
 ) -> None:
     UserFactory(username="test")
 
     response_login = api_client.post(login_url, {"username": "test", "password": "password"})
-    assert Token.objects.count() == 1
 
     token = response_login.json()["token"]  # type: ignore[attr-defined]
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
@@ -231,3 +234,22 @@ def test_logout(
 
     assert response.status_code == status.HTTP_200_OK
     assert Token.objects.count() == 0
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "token",
+    [
+        None,
+        "wrong",
+    ],
+)
+def test_logout_invalid_token(
+    api_client: APIClient,
+    token: Optional[str],
+) -> None:
+    if token is not None:
+        api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+    response = api_client.post(logout_url)
+
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
