@@ -33,7 +33,7 @@ def test_register_success(api_client: APIClient) -> None:
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "data, expected_status_code, response_json, user_count",
+    "data, expected_status_code, expected_response_json, expected_user_count",
     [
         (
             {
@@ -130,22 +130,22 @@ def test_register_validation_failed(
     api_client: APIClient,
     data: Dict[str, str],
     expected_status_code: int,
-    response_json: Dict[str, List[str]],
-    user_count: int,
+    expected_response_json: Dict[str, List[str]],
+    expected_user_count: int,
 ) -> None:
-    assert User.objects.count() == user_count
+    assert User.objects.count() == expected_user_count
 
     response = api_client.post(register_url, data)
 
     assert response.status_code == expected_status_code
     # mypy ignored because of https://github.com/typeddjango/djangorestframework-stubs/issues/230
-    assert response.json() == response_json  # type: ignore[attr-defined]
-    assert User.objects.count() == user_count
+    assert response.json() == expected_response_json  # type: ignore[attr-defined]
+    assert User.objects.count() == expected_user_count
 
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    "existent_user_data, expected_status_code, response_json, user_count",
+    "existent_user_data, expected_status_code, expected_response_json, expected_user_count",
     [
         (
             {"email": "test@example.com"},
@@ -165,12 +165,12 @@ def test_register_user_not_unique(
     api_client: APIClient,
     existent_user_data: Dict[str, str],
     expected_status_code: int,
-    response_json: Dict[str, List[str]],
-    user_count: int,
+    expected_response_json: Dict[str, List[str]],
+    expected_user_count: int,
 ) -> None:
     UserFactory(**existent_user_data)
 
-    assert User.objects.count() == user_count
+    assert User.objects.count() == expected_user_count
 
     request_data = {
         "email": "test@example.com",
@@ -182,8 +182,8 @@ def test_register_user_not_unique(
     response = api_client.post(register_url, request_data)
 
     assert response.status_code == expected_status_code
-    assert response.json() == response_json  # type: ignore[attr-defined]
-    assert User.objects.count() == user_count
+    assert response.json() == expected_response_json  # type: ignore[attr-defined]
+    assert User.objects.count() == expected_user_count
 
 
 @pytest.mark.django_db
