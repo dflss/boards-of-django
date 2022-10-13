@@ -21,6 +21,7 @@ repos:
         - psycopg2
         - pytest
         - pytest_factoryboy
+        - djangorestframework
       args: [--strict]
 
 -   repo: https://gitlab.com/pycqa/flake8
