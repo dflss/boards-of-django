@@ -22,6 +22,6 @@ class Board(TimestampedModel):
     """
 
     name = models.CharField(unique=True, max_length=20)
-    creator = models.ForeignKey(User, on_delete=models.PROTECT)
+    creator = models.ForeignKey(User, on_delete=models.PROTECT, related_name="boards_created")
     members = models.ManyToManyField(User, related_name="members")
     admins = models.ManyToManyField(User, related_name="admins")
