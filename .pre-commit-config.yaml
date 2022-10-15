@@ -23,6 +23,8 @@ repos:
         - pytest_factoryboy
         - djangorestframework
         - drf_yasg
+        - django-filter
+        - django-filter-stubs
       args: [--strict]
 
 -   repo: https://gitlab.com/pycqa/flake8
