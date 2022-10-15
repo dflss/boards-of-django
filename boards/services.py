@@ -39,7 +39,7 @@ def create_board(
     """
     _validate_board_name(name=name)
 
-    board = Board(name=name, creator=creator)
+    board = Board(name=name)
     board.full_clean()
     board.save()
 
