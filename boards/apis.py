@@ -59,14 +59,8 @@ class BoardsApi(APIView):
         """
         filters_serializer = self.FilterSerializer(data=request.query_params)
         filters_serializer.is_valid(raise_exception=True)
-        if filters_serializer.validated_data["is_member"]:
-            filters_serializer.validated_data.pop("is_member")
-            filters_serializer.validated_data["members"] = [request.user.id]
-        if filters_serializer.validated_data["is_admin"]:
-            filters_serializer.validated_data.pop("is_admin")
-            filters_serializer.validated_data["admins"] = [request.user.id]
 
-        boards = board_list(filters=filters_serializer.validated_data)
+        boards = board_list(**filters_serializer.validated_data, user=cast(User, request.user))
 
         data = self.OutputSerializer(boards, many=True).data
 

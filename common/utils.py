@@ -29,13 +29,16 @@ def raise_django_exception_as_drf_exception(exc: Exception, ctx: Dict[str, Any])
     return response
 
 
-def reverse_querystring(
+def reverse_with_query_params(
     viewname: str, kwargs: Optional[Dict[Any, Any]] = None, query_kwargs: Optional[Dict[str, Any]] = None
 ) -> str:
-    """Reverse a url with query strings.
+    """Reverse a url that contains query parameters.
 
-    Usage:
-        reverse('app.views.my_view', kwargs={'pk': 123}, query_kwargs={'search': 'Bob'})
+    This function can be used for example with search filters, as Django's reverse does not support query parameters
+    at the moment.
+
+    Example usage:
+        reverse_with_query_params('app.views.my_view', kwargs={'pk': 123}, query_kwargs={'search': 'Bob'})
     """
     base_url = reverse(viewname, kwargs=kwargs)
     if query_kwargs:

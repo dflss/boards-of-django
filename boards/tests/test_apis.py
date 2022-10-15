@@ -5,13 +5,13 @@ from django.urls import reverse
 from rest_framework import status
 
 from boards.models import Board
-from common.utils import reverse_querystring
+from common.utils import reverse_with_query_params
 from conftest import APIClientWithUser
 from factories import BoardFactory
 
 
 def boards_url(query_kwargs: Optional[Dict[str, Any]] = None) -> str:
-    return reverse_querystring("boards:boards", query_kwargs=query_kwargs)
+    return reverse_with_query_params("boards:boards", query_kwargs=query_kwargs)
 
 
 def boards_detail_url(board_id: int) -> str:
@@ -34,8 +34,6 @@ def boards_detail_url(board_id: int) -> str:
     ],
 )
 def test_create_board_success(api_client_with_credentials: APIClientWithUser, data: Dict[str, str]) -> None:
-    assert Board.objects.count() == 0
-
     response = api_client_with_credentials.post(boards_url(), data)
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -88,8 +86,6 @@ def test_create_board_validation_failed(
     data: Dict[str, str],
     expected_response_json: Dict[str, List[str]],
 ) -> None:
-    assert Board.objects.count() == 0
-
     response = api_client_with_credentials.post(boards_url(), data)
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -102,8 +98,6 @@ def test_create_board_name_not_unique(
     api_client_with_credentials: APIClientWithUser,
 ) -> None:
     BoardFactory(name="Test")
-
-    assert Board.objects.count() == 1
 
     response = api_client_with_credentials.post(boards_url(), {"name": "Test"})
 
