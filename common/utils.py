@@ -39,6 +39,16 @@ def reverse_with_query_params(
 
     Example usage:
         reverse_with_query_params('app.views.my_view', kwargs={'pk': 123}, query_kwargs={'search': 'Bob'})
+
+    Parameters
+    ----------
+    viewname : Name of the view
+    kwargs : Dictionary where key is the name of the ulr param and value is its value
+    query_kwargs : Dictionary where key is the name of the query param and value is its value
+
+    Returns
+    -------
+    Url string
     """
     base_url = reverse(viewname, kwargs=kwargs)
     if query_kwargs:

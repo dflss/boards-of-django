@@ -10,14 +10,16 @@ from boards.models import Board
 def board_list(
     *, user: User, name: Optional[str] = None, is_member: Optional[bool] = None, is_admin: Optional[bool] = None
 ) -> QuerySet[Board]:
-    """Fetch list of boards based on parameters provided.
+    """Fetch list of boards for the given user.
 
     Parameters
     ----------
-    user : User that is treated as a reference point when filtering the query by is_admin and is_member parameters
-    name : Filter boards that contain the given name
-    is_admin : Filter boards that the user administers
-    is_member : Filter boards that the user is member of
+    user : Given user
+    name : Only boards that contain this name will be returned
+    is_admin : If set to True, only boards that the given user administers will be returned. If set to False, the
+        boards that are NOT administered by the given user will be returned.
+    is_member : If set to True, only boards that the given user is a member of will be returned. If set to False, the
+        boards that the user is NOT a member of will be returned.
 
     Returns
     -------

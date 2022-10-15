@@ -26,6 +26,7 @@ def create_board(
 
     Before creation, board name be validated.
     Name must contain 3-20 characters and consist only of letters (a-z) and underscore (_) character.
+    The user who created the board will automatically be added as both member and admin of the board.
 
     Parameters
     ----------

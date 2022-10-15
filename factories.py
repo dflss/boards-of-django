@@ -30,13 +30,11 @@ class BoardFactory(factory.django.DjangoModelFactory):  # type: ignore
         if not create:
             return
         if extracted:
-            for member in extracted:
-                self.members.add(member)
+            self.members.add(*extracted)
 
     @factory.post_generation  # type: ignore
     def admins(self, create: bool, extracted: List[UserType]) -> None:
         if not create:
             return
         if extracted:
-            for admin in extracted:
-                self.admins.add(admin)
+            self.admins.add(*extracted)

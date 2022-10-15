@@ -1,5 +1,7 @@
 from typing import Any, cast
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -16,9 +18,15 @@ class BoardsApi(APIView):
 
     permission_classes = (IsAuthenticated,)
 
-    class InputSerializer(serializers.Serializer[Any]):
+    class BoardsInputSerializer(serializers.Serializer[Any]):
         name = serializers.CharField(required=True)
 
+    @swagger_auto_schema(  # type: ignore
+        request_body=BoardsInputSerializer,
+        responses={
+            201: openapi.Response(description="empty"),
+        },
+    )
     def post(self, request: Request) -> Response:
         """
         Create a new board.
@@ -34,7 +42,7 @@ class BoardsApi(APIView):
         - 201 if board was successfully created
         - 400 if input validation failed
         """
-        serializer = self.InputSerializer(data=request.data)
+        serializer = self.BoardsInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         create_board(**serializer.validated_data, creator=cast(User, request.user))
@@ -46,9 +54,10 @@ class BoardsApi(APIView):
         is_member = serializers.BooleanField(required=False)
         is_admin = serializers.BooleanField(required=False)
 
-    class OutputSerializer(serializers.Serializer[Any]):
+    class BoardsOutputSerializer(serializers.Serializer[Any]):
         name = serializers.CharField(required=True)
 
+    @swagger_auto_schema(responses={200: BoardsOutputSerializer(many=True)})  # type: ignore
     def get(self, request: Request) -> Response:
         """
         Retrieve list of boards.
@@ -62,7 +71,7 @@ class BoardsApi(APIView):
 
         boards = board_list(**filters_serializer.validated_data, user=cast(User, request.user))
 
-        data = self.OutputSerializer(boards, many=True).data
+        data = self.BoardsOutputSerializer(boards, many=True).data
 
         return Response(data=data, status=status.HTTP_200_OK)
 
@@ -72,9 +81,10 @@ class DetailBoardsApi(APIView):
 
     permission_classes = (IsAuthenticated,)
 
-    class OutputSerializer(serializers.Serializer[Any]):
+    class DetailBoardsOutputSerializer(serializers.Serializer[Any]):
         name = serializers.CharField(required=True)
 
+    @swagger_auto_schema(responses={200: DetailBoardsOutputSerializer()})  # type: ignore
     def get(self, request: Request, board_id: int) -> Response:
         """
         Retrieve board details.
@@ -89,6 +99,6 @@ class DetailBoardsApi(APIView):
         if board is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        data = self.OutputSerializer(board).data
+        data = self.DetailBoardsOutputSerializer(board).data
 
         return Response(data=data, status=status.HTTP_200_OK)
