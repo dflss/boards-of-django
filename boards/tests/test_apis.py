@@ -41,6 +41,11 @@ def test_create_board_success(api_client_with_credentials: APIClientWithUser, da
     assert response.status_code == status.HTTP_201_CREATED
     assert Board.objects.count() == 1
 
+    board = Board.objects.first()
+
+    assert list(board.users.all()) == [api_client_with_credentials.user]  # type: ignore
+    assert list(board.admins.all()) == [api_client_with_credentials.user]  # type: ignore
+
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
