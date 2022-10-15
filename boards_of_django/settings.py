@@ -35,12 +35,14 @@ REST_FRAMEWORK = {
 
 LOCAL_APPS = [
     "authentication.apps.AuthenticationConfig",
+    "boards.apps.BoardsConfig",
     "common.apps.CommonConfig",
 ]
 
 THIRD_PARTY_APPS = [
     "rest_framework.authtoken",
     "drf_yasg",
+    "django_filters",
 ]
 
 INSTALLED_APPS = [
