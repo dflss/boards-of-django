@@ -17,11 +17,11 @@ class Board(TimestampedModel):
     ----------
     name : Board's name
     creator : User that created the board
-    users : Users that are members of the board
+    members : Users that are members of the board
     admins : Users that are administrators of the board
     """
 
     name = models.CharField(unique=True, max_length=20)
     creator = models.ForeignKey(User, on_delete=models.PROTECT)
-    users = models.ManyToManyField(User, related_name="users")
+    members = models.ManyToManyField(User, related_name="members")
     admins = models.ManyToManyField(User, related_name="admins")

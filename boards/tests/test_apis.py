@@ -43,7 +43,7 @@ def test_create_board_success(api_client_with_credentials: APIClientWithUser, da
 
     board = Board.objects.first()
 
-    assert list(board.users.all()) == [api_client_with_credentials.user]  # type: ignore
+    assert list(board.members.all()) == [api_client_with_credentials.user]  # type: ignore
     assert list(board.admins.all()) == [api_client_with_credentials.user]  # type: ignore
 
 
@@ -153,7 +153,7 @@ def test_get_board_list_filter_is_member(api_client_with_credentials: APIClientW
     board_1 = BoardFactory()
     BoardFactory()
     user = api_client_with_credentials.user
-    board_1.users.add(user)
+    board_1.members.add(user)
 
     response = api_client_with_credentials.get(boards_url(query_kwargs={"is_member": True}))
 
@@ -169,7 +169,7 @@ def test_get_board_list_filter_is_admin(api_client_with_credentials: APIClientWi
     BoardFactory()
     user = api_client_with_credentials.user
     board_1.admins.add(user)
-    board_2.users.add(user)
+    board_2.members.add(user)
 
     response = api_client_with_credentials.get(boards_url(query_kwargs={"is_admin": True}))
 

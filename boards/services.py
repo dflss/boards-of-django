@@ -43,7 +43,7 @@ def create_board(
     board.full_clean()
     board.save()
 
-    board.users.add(creator)
+    board.members.add(creator)
     board.admins.add(creator)
 
     return board

@@ -61,7 +61,7 @@ class BoardsApi(APIView):
         filters_serializer.is_valid(raise_exception=True)
         if filters_serializer.validated_data["is_member"]:
             filters_serializer.validated_data.pop("is_member")
-            filters_serializer.validated_data["users"] = [request.user.id]
+            filters_serializer.validated_data["members"] = [request.user.id]
         if filters_serializer.validated_data["is_admin"]:
             filters_serializer.validated_data.pop("is_admin")
             filters_serializer.validated_data["admins"] = [request.user.id]

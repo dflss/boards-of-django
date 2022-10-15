@@ -12,7 +12,7 @@ class BoardFilter(FilterSet):
     """Filters that can be applied to Board queryset."""
 
     name = CharFilter(lookup_expr="icontains")
-    users = ModelMultipleChoiceFilter(queryset=User.objects.all())
+    members = ModelMultipleChoiceFilter(queryset=User.objects.all())
     admins = ModelMultipleChoiceFilter(queryset=User.objects.all())
 
     class Meta:
