@@ -48,3 +48,23 @@ def create_board(
     board.admins.add(creator)
 
     return board
+
+
+def add_member_to_board(
+    *,
+    board: Board,
+    user: User,
+) -> None:
+    """
+    Ensure that the user is added to a board as its member.
+
+    Parameters
+    ----------
+    board : Board that the user will be added to as member.
+    user : User that will join as member.
+
+    Returns
+    -------
+    None
+    """
+    board.members.add(user)

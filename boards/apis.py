@@ -3,6 +3,7 @@ from typing import Any, cast
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
+from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -10,7 +11,7 @@ from rest_framework.views import APIView
 
 from authentication.models import User
 from boards.selectors import board_get, board_list
-from boards.services import create_board
+from boards.services import add_member_to_board, create_board
 
 
 class BoardsApi(APIView):
@@ -102,3 +103,25 @@ class DetailBoardsApi(APIView):
         data = self.DetailBoardsOutputSerializer(board).data
 
         return Response(data=data, status=status.HTTP_200_OK)
+
+    @staticmethod
+    @api_view(["POST"])
+    def join(request: Request, board_id: int) -> Response:
+        """
+        Join the board as its member.
+
+        If the user is already a board member, nothing happens and 200 is returned.
+
+        Returns
+        -------
+        HTTP response with code:
+        - 200 if board was found
+        - 404 if board does not exist
+        """
+        board = board_get(board_id=board_id)
+        if board is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        user = cast(User, request.user)
+        add_member_to_board(board=board, user=user)
+        return Response(status=status.HTTP_200_OK)

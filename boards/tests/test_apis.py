@@ -18,6 +18,10 @@ def boards_detail_url(board_id: int) -> str:
     return reverse("boards:board_detail", kwargs={"board_id": board_id})
 
 
+def boards_join_url(board_id: int) -> str:
+    return reverse("boards:board_detail_join", kwargs={"board_id": board_id})
+
+
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     "data",
@@ -185,5 +189,23 @@ def test_get_board_detail_success(api_client_with_credentials: APIClientWithUser
 @pytest.mark.django_db
 def test_get_board_detail_not_found(api_client_with_credentials: APIClientWithUser) -> None:
     response = api_client_with_credentials.get(boards_detail_url(board_id=0))
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+def test_join_board(api_client_with_credentials: APIClientWithUser) -> None:
+    board = BoardFactory()
+    assert list(board.members.all()) == []
+
+    response = api_client_with_credentials.post(boards_join_url(board_id=board.id))
+
+    assert response.status_code == status.HTTP_200_OK
+    assert list(board.members.all()) == [api_client_with_credentials.user]
+
+
+@pytest.mark.django_db
+def test_join_board_not_found(api_client_with_credentials: APIClientWithUser) -> None:
+    response = api_client_with_credentials.post(boards_join_url(board_id=0))
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
