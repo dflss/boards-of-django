@@ -110,6 +110,8 @@ class DetailBoardsApi(APIView):
         """
         Join the board as its member.
 
+        If the user is already a board member, nothing happens and 200 is returned.
+
         Returns
         -------
         HTTP response with code:

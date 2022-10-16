@@ -56,7 +56,7 @@ def add_member_to_board(
     user: User,
 ) -> None:
     """
-    Add user to a board as its member.
+    Ensure that the user is added to a board as its member.
 
     Parameters
     ----------
