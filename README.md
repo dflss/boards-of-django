@@ -5,6 +5,7 @@
 * [Getting started](#getting-started)
 * [Testing](#testing)
 * [Docs](#docs)
+* [Styleguide](#styleguide)
 * [How to contribute](#how-to-contribute)
 * [Status](#status)
 
@@ -33,6 +34,10 @@ docker-compose exec django pytest
 ## Docs
 
 After building and running the project locally, the documentation can be found at: [http://localhost/swagger/](http://localhost/swagger/).
+
+## Styleguide
+
+The followed styleguide is the [HackSoft's Django-Styleguide](https://github.com/HackSoftware/Django-Styleguide).
 
 ## How to contribute
 
