@@ -1,6 +1,8 @@
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
@@ -22,6 +24,12 @@ class UserRegisterApi(APIView):
         password = serializers.CharField(required=True)
         password2 = serializers.CharField(required=True)
 
+    @swagger_auto_schema(  # type: ignore
+        request_body=InputSerializer,
+        responses={
+            201: openapi.Response(description=""),
+        },
+    )
     def post(self, request: Request) -> Response:
         """
         Create a new user.
@@ -73,6 +81,11 @@ class UserLogoutApi(APIView):
 
     permission_classes = (IsAuthenticated,)
 
+    @swagger_auto_schema(  # type: ignore
+        responses={
+            200: openapi.Response(description=""),
+        },
+    )
     def post(self, request: Request) -> Response:
         """Log the user out by invalidating her/his authorization token.
 
