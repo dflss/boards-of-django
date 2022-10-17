@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from authentication.models import User
 from boards.selectors import board_get, board_list
 from boards.services import add_admin_to_board, add_member_to_board, create_board
+from common.pagination import LimitOffsetPagination, get_paginated_response
 from common.utils import RequestWithUser as Request
 
 
@@ -44,6 +45,9 @@ class BoardsApi(APIView):
 
         return Response(status=status.HTTP_201_CREATED)
 
+    class Pagination(LimitOffsetPagination):
+        default_limit = 10
+
     class FilterSerializer(serializers.Serializer[Any]):
         name = serializers.CharField(required=False)
         is_member = serializers.BooleanField(required=False)
@@ -60,9 +64,13 @@ class BoardsApi(APIView):
 
         boards = board_list(**filters_serializer.validated_data, user=request.user)
 
-        data = self.OutputSerializer(boards, many=True).data
-
-        return Response(data=data, status=status.HTTP_200_OK)
+        return get_paginated_response(
+            pagination_class=self.Pagination,
+            serializer_class=self.OutputSerializer,
+            queryset=boards,
+            request=request,
+            view=self,
+        )
 
 
 class DetailBoardsApi(APIView):

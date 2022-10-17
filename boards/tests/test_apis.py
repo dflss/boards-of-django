@@ -122,8 +122,8 @@ def test_get_board_list(api_client_with_credentials: APIClientWithUser) -> None:
     response = api_client_with_credentials.get(boards_url())
 
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()) == 2
-    assert response.json() == [{"name": board_1.name}, {"name": board_2.name}]
+    assert len(response.json()["results"]) == 2
+    assert response.json()["results"] == [{"name": board_1.name}, {"name": board_2.name}]
 
 
 @pytest.mark.django_db
@@ -133,8 +133,8 @@ def test_get_board_list_filter_by_name(api_client_with_credentials: APIClientWit
     response = api_client_with_credentials.get(boards_url(query_kwargs={"name": board_1.name}))
 
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()) == 1
-    assert response.json() == [{"name": board_1.name}]
+    assert len(response.json()["results"]) == 1
+    assert response.json()["results"] == [{"name": board_1.name}]
 
 
 @pytest.mark.django_db
@@ -146,8 +146,8 @@ def test_get_board_list_filter_by_name_multiple_results(api_client_with_credenti
     response = api_client_with_credentials.get(boards_url(query_kwargs={"name": "test"}))
 
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()) == 2
-    assert response.json() == [{"name": board_1.name}, {"name": board_2.name}]
+    assert len(response.json()["results"]) == 2
+    assert response.json()["results"] == [{"name": board_1.name}, {"name": board_2.name}]
 
 
 @pytest.mark.django_db
@@ -160,8 +160,8 @@ def test_get_board_list_filter_is_member(api_client_with_credentials: APIClientW
     response = api_client_with_credentials.get(boards_url(query_kwargs={"is_member": True}))
 
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()) == 1
-    assert response.json() == [{"name": board_1.name}]
+    assert len(response.json()["results"]) == 1
+    assert response.json()["results"] == [{"name": board_1.name}]
 
 
 @pytest.mark.django_db
@@ -176,8 +176,8 @@ def test_get_board_list_filter_is_admin(api_client_with_credentials: APIClientWi
     response = api_client_with_credentials.get(boards_url(query_kwargs={"is_admin": True}))
 
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()) == 1
-    assert response.json() == [{"name": board_1.name}]
+    assert len(response.json()["results"]) == 1
+    assert response.json()["results"] == [{"name": board_1.name}]
 
 
 @pytest.mark.django_db
