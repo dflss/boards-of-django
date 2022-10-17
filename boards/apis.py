@@ -3,7 +3,6 @@ from typing import Any, cast
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
-from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -90,9 +89,13 @@ class DetailBoardsApi(APIView):
 
         return Response(data=data, status=status.HTTP_200_OK)
 
-    @staticmethod
-    @api_view(["POST"])
-    def join(request: Request, board_id: int) -> Response:
+
+class JoinBoardsApi(APIView):
+    """Join the board as its member."""
+
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request: Request, board_id: int) -> Response:
         """
         Join the board as its member.
 
