@@ -220,6 +220,7 @@ def test_add_admin_to_board(api_client_with_credentials: APIClientWithUser) -> N
     board = BoardFactory()
     board.admins.add(api_client_with_credentials.user)
     user_to_add = UserFactory()
+    board.members.add(user_to_add)
 
     response = api_client_with_credentials.post(
         boards_add_admin_url(board_id=board.id), data={"users_to_add": [user_to_add.id]}
@@ -227,6 +228,36 @@ def test_add_admin_to_board(api_client_with_credentials: APIClientWithUser) -> N
 
     assert response.status_code == status.HTTP_200_OK
     assert list(board.admins.all()) == [api_client_with_credentials.user, user_to_add]
+
+
+@pytest.mark.django_db
+def test_add_admin_who_is_already_an_admin_to_board(api_client_with_credentials: APIClientWithUser) -> None:
+    board = BoardFactory()
+    board.admins.add(api_client_with_credentials.user)
+    user_to_add = UserFactory()
+    board.members.add(user_to_add)
+    board.admins.add(user_to_add)
+
+    response = api_client_with_credentials.post(
+        boards_add_admin_url(board_id=board.id), data={"users_to_add": [user_to_add.id]}
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert list(board.admins.all()) == [api_client_with_credentials.user, user_to_add]
+
+
+@pytest.mark.django_db
+def test_add_admin_who_is_not_a_member_to_board(api_client_with_credentials: APIClientWithUser) -> None:
+    board = BoardFactory()
+    board.admins.add(api_client_with_credentials.user)
+    user_to_add = UserFactory()
+
+    response = api_client_with_credentials.post(
+        boards_add_admin_url(board_id=board.id), data={"users_to_add": [user_to_add.id]}
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {"users_to_add": ["Only board members can be added as board admins."]}  # type: ignore
 
 
 @pytest.mark.django_db
@@ -239,6 +270,7 @@ def test_add_admin_by_user_that_is_not_an_admin(api_client_with_credentials: API
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json() == {"detail": "Only board admin can perform this action."}  # type: ignore
 
 
 @pytest.mark.django_db

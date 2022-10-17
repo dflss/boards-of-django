@@ -124,8 +124,8 @@ class AddAdminsBoardsApi(APIView):
     @swagger_auto_schema(  # type: ignore
         request_body=InputSerializer,
         responses={
-            200: openapi.Response(description="board was found"),
-            401: openapi.Response(description="user making the request if not a board admin"),
+            200: openapi.Response(description="users were assigned as admins"),
+            403: openapi.Response(description="user making the request is not a board admin"),
             404: openapi.Response(description="board does not exist"),
         },
     )
@@ -134,7 +134,7 @@ class AddAdminsBoardsApi(APIView):
         Assign users as board administrators.
 
         This action can only be performed by a current board admin. If the user to add is already an admin, nothing
-        happens and 200 is returned.
+        happens and 200 is returned. If a user to add is not a board member, she/he is cannot be added as an admin.
         """
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -144,8 +144,6 @@ class AddAdminsBoardsApi(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         user = cast(User, request.user)
-        if user not in board.admins.all():
-            return Response(status=status.HTTP_403_FORBIDDEN)
 
-        add_admin_to_board(**serializer.validated_data, board=board)
+        add_admin_to_board(**serializer.validated_data, board=board, user=user)
         return Response(status=status.HTTP_200_OK)
