@@ -6,5 +6,5 @@ urlpatterns = [
     path("", BoardsApi.as_view(), name="boards"),
     path("<int:board_id>/", DetailBoardsApi.as_view(), name="board_detail"),
     path("<int:board_id>/join/", DetailBoardsApi.join, name="board_detail_join"),
-    path("<int:board_id>/add_admin/", AddAdminsBoardsApi.as_view(), name="board_detail_add_admin"),
+    path("<int:board_id>/add-admin/", AddAdminsBoardsApi.as_view(), name="board-detail-add-admin"),
 ]

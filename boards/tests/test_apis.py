@@ -23,7 +23,7 @@ def boards_join_url(board_id: int) -> str:
 
 
 def boards_add_admin_url(board_id: int) -> str:
-    return reverse("boards:board_detail_add_admin", kwargs={"board_id": board_id})
+    return reverse("boards:board-detail-add-admin", kwargs={"board_id": board_id})
 
 
 @pytest.mark.django_db
