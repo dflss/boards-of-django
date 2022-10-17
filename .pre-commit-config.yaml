@@ -26,6 +26,7 @@ repos:
         - django-filter
         - django-filter-stubs
       args: [--strict]
+      exclude: '^env/|migrations|.git|.mypy_cache|pytest_cache'
 
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 5.0.4
