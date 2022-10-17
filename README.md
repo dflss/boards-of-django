@@ -62,33 +62,11 @@ In this project, a different approach is used. For each resource, we can have tw
 urlpatterns = [
     path("", BoardsApi.as_view(), name="boards"),
     path("<int:board_id>/", DetailBoardsApi.as_view(), name="board_detail"),
-    path("<int:board_id>/join/", DetailBoardsApi.join, name="board_detail_join"),
+    path("<int:board_id>/add_admin/", AddAdminsBoardsApi.as_view(), name="board_detail_add_admin"),
 ]
 ```
 
-Special actions (such as `join` in the example above) have a separate URL pattern and are defined as static methods within the "detail" APIView:
-
-```
-@staticmethod
-    @api_view(["POST"])
-    def join(request: Request, board_id: int) -> Response:
-        """
-        Join the board as its member.
-        If the user is already a board member, nothing happens and 200 is returned.
-        Returns
-        -------
-        HTTP response with code:
-        - 200 if board was found
-        - 404 if board does not exist
-        """
-        board = board_get(board_id=board_id)
-        if board is None:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        user = cast(User, request.user)
-        add_member_to_board(board=board, user=user)
-        return Response(status=status.HTTP_200_OK)
-```
+Special actions (such as `add_admin` in the example above) have a separate URL pattern and are defined as a separate APIView.
 
 ## How to contribute
 
