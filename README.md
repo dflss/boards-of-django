@@ -5,6 +5,7 @@
 * [Getting started](#getting-started)
 * [Testing](#testing)
 * [Docs](#docs)
+* [Styleguide](#styleguide)
 * [How to contribute](#how-to-contribute)
 * [Status](#status)
 
@@ -32,7 +33,40 @@ docker-compose exec django pytest
 
 ## Docs
 
-After building and running the project locally, the documentation can be found at: [http://localhost/swagger/](http://localhost/swagger/).
+After building and running the project locally, the documentation can be found at: [http://localhost/swagger/](http://localhost/swagger/). 
+
+
+## Styleguide
+
+The followed styleguide is the [HackSoft's Django-Styleguide](https://github.com/HackSoftware/Django-Styleguide). However, there is one exception regarding URLs.
+
+In Django-Styleguide, each HTTP method is wrapped in a separate APIView and a separate URL is used for each of these APIViews. Therefore, URLs are built by appending the action's name like this:
+
+```
+urlpatterns = [
+    path('', CourseListApi.as_view(), name='list'),
+    path('<int:course_id>/', CourseDetailApi.as_view(), name='detail'),
+    path('create/', CourseCreateApi.as_view(), name='create'),
+    path('<int:course_id>/update/', CourseUpdateApi.as_view(), name='update'),
+    path(
+        '<int:course_id>/specific-action/',
+        CourseSpecificActionApi.as_view(),
+        name='specific-action'
+    ),
+]
+```
+
+In this project, a different approach is used. For each resource, we can have two types of actions: "list" actions and "detail" actions. "Detail" actions are those that require object id as a url parameter -- for example `update` or `delete`. "List" actions are for example `create` or `list`. Then, a single URL is built for "list" actions and "detail" actions". The action itself is recognized based on the HTTP method instead of explicit URL pattern.
+
+```
+urlpatterns = [
+    path("", BoardsApi.as_view(), name="boards"),
+    path("<int:board_id>/", DetailBoardsApi.as_view(), name="board_detail"),
+    path("<int:board_id>/add_admin/", AddAdminsBoardsApi.as_view(), name="board_detail_add_admin"),
+]
+```
+
+Special actions (such as `add_admin` in the example above) have a separate URL pattern and are defined as a separate APIView.
 
 ## How to contribute
 
