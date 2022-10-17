@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -28,6 +29,7 @@ class UserRegisterApi(APIView):
         request_body=InputSerializer,
         responses={
             201: openapi.Response(description=""),
+            400: openapi.Response(description=""),
         },
     )
     def post(self, request: Request) -> Response:
@@ -58,6 +60,18 @@ class UserRegisterApi(APIView):
 class UserLoginApi(ObtainAuthToken):
     """Log the user in."""
 
+    @swagger_auto_schema(  # type: ignore
+        request_body=AuthTokenSerializer,
+        responses={
+            201: openapi.Response(
+                description="",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT, properties={"token": openapi.Schema(type=openapi.TYPE_STRING)}
+                ),
+            ),
+            400: openapi.Response(description=""),
+        },
+    )
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Log the user in by creating an authorization token and assigning it to the user.
 

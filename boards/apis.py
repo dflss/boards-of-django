@@ -25,6 +25,7 @@ class BoardsApi(APIView):
         request_body=InputSerializer,
         responses={
             201: openapi.Response(description=""),
+            400: openapi.Response(description=""),
         },
     )
     def post(self, request: Request) -> Response:
@@ -84,7 +85,12 @@ class DetailBoardsApi(APIView):
     class OutputSerializer(serializers.Serializer[Any]):
         name = serializers.CharField(required=True)
 
-    @swagger_auto_schema(responses={200: OutputSerializer()})  # type: ignore
+    @swagger_auto_schema(
+        responses={
+            200: OutputSerializer(),
+            404: openapi.Response(description=""),
+        }
+    )  # type: ignore
     def get(self, request: Request, board_id: int) -> Response:
         """
         Retrieve board details.
