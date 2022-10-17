@@ -33,11 +33,62 @@ docker-compose exec django pytest
 
 ## Docs
 
-After building and running the project locally, the documentation can be found at: [http://localhost/swagger/](http://localhost/swagger/).
+After building and running the project locally, the documentation can be found at: [http://localhost/swagger/](http://localhost/swagger/). 
+
 
 ## Styleguide
 
-The followed styleguide is the [HackSoft's Django-Styleguide](https://github.com/HackSoftware/Django-Styleguide).
+The followed styleguide is the [HackSoft's Django-Styleguide](https://github.com/HackSoftware/Django-Styleguide). However, there is one exception regarding URLs.
+
+In Django-Styleguide, each HTTP method is wrapped in a separate APIView and a separate URL is used for each of these APIViews. Therefore, URLs are built by appending the action's name like this:
+
+```
+urlpatterns = [
+    path('', CourseListApi.as_view(), name='list'),
+    path('<int:course_id>/', CourseDetailApi.as_view(), name='detail'),
+    path('create/', CourseCreateApi.as_view(), name='create'),
+    path('<int:course_id>/update/', CourseUpdateApi.as_view(), name='update'),
+    path(
+        '<int:course_id>/specific-action/',
+        CourseSpecificActionApi.as_view(),
+        name='specific-action'
+    ),
+]
+```
+
+In this project, a different approach is used. For each resource, we can have two types of actions: "list" actions and "detail" actions. "Detail" actions are those that require object id as a url parameter -- for example `update` or `delete`. "List" actions are for example `create` or `list`. Then, a single URL is built for "list" actions and "detail" actions". The action itself is recognized based on the HTTP method instead of explicit URL pattern.
+
+```
+urlpatterns = [
+    path("", BoardsApi.as_view(), name="boards"),
+    path("<int:board_id>/", DetailBoardsApi.as_view(), name="board_detail"),
+    path("<int:board_id>/join/", DetailBoardsApi.join, name="board_detail_join"),
+]
+```
+
+Special actions (such as `join` in the example above) have a separate URL pattern and are defined as static methods within the "detail" APIView:
+
+```
+@staticmethod
+    @api_view(["POST"])
+    def join(request: Request, board_id: int) -> Response:
+        """
+        Join the board as its member.
+        If the user is already a board member, nothing happens and 200 is returned.
+        Returns
+        -------
+        HTTP response with code:
+        - 200 if board was found
+        - 404 if board does not exist
+        """
+        board = board_get(board_id=board_id)
+        if board is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        user = cast(User, request.user)
+        add_member_to_board(board=board, user=user)
+        return Response(status=status.HTTP_200_OK)
+```
 
 ## How to contribute
 
