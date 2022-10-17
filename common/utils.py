@@ -4,9 +4,23 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.urls import reverse
 from django.utils.http import urlencode
 from rest_framework import exceptions
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import as_serializer_error
 from rest_framework.views import exception_handler
+
+from authentication.models import User
+
+
+class RequestWithUser(Request):
+    """
+    Custom request type required to resolve issues with mypy when using a custom user model.
+
+    Without this class, all User usages in APIViews need explicit casting to User.
+    More information: https://stackoverflow.com/questions/61715819/request-user-returning-abstract-user-django-stubs
+    """
+
+    user: User
 
 
 def raise_django_exception_as_drf_exception(exc: Exception, ctx: Dict[str, Any]) -> Optional[Response]:

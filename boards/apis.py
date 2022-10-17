@@ -1,16 +1,16 @@
-from typing import Any, cast
+from typing import Any
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from authentication.models import User
 from boards.selectors import board_get, board_list
 from boards.services import add_admin_to_board, add_member_to_board, create_board
+from common.utils import RequestWithUser as Request
 
 
 class BoardsApi(APIView):
@@ -40,7 +40,7 @@ class BoardsApi(APIView):
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        create_board(**serializer.validated_data, creator=cast(User, request.user))
+        create_board(**serializer.validated_data, creator=request.user)
 
         return Response(status=status.HTTP_201_CREATED)
 
@@ -58,7 +58,7 @@ class BoardsApi(APIView):
         filters_serializer = self.FilterSerializer(data=request.query_params)
         filters_serializer.is_valid(raise_exception=True)
 
-        boards = board_list(**filters_serializer.validated_data, user=cast(User, request.user))
+        boards = board_list(**filters_serializer.validated_data, user=request.user)
 
         data = self.OutputSerializer(boards, many=True).data
 
@@ -111,7 +111,7 @@ class JoinBoardsApi(APIView):
         if board is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        user = cast(User, request.user)
+        user = request.user
         add_member_to_board(board=board, user=user)
         return Response(status=status.HTTP_200_OK)
 
@@ -146,7 +146,7 @@ class AddAdminsBoardsApi(APIView):
         if board is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        user = cast(User, request.user)
+        user = request.user
 
         add_admin_to_board(**serializer.validated_data, board=board, user=user)
         return Response(status=status.HTTP_200_OK)
