@@ -24,8 +24,8 @@ class BoardsApi(APIView):
     @swagger_auto_schema(  # type: ignore
         request_body=InputSerializer,
         responses={
-            201: openapi.Response(description=""),
-            400: openapi.Response(description=""),
+            201: openapi.Response(description="board was successfully created"),
+            400: openapi.Response(description="input validation failed"),
         },
     )
     def post(self, request: Request) -> Response:
@@ -36,12 +36,6 @@ class BoardsApi(APIView):
         - the name is unique
         - the name contains only small/big letters (a-z) and underscore (_)
         - the name is at least 3 and at maximum 20 characters long
-
-        Returns
-        -------
-        HTTP response with code:
-        - 201 if board was successfully created
-        - 400 if input validation failed
         """
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -60,13 +54,7 @@ class BoardsApi(APIView):
 
     @swagger_auto_schema(responses={200: OutputSerializer(many=True)})  # type: ignore
     def get(self, request: Request) -> Response:
-        """
-        Retrieve list of boards.
-
-        Returns
-        -------
-        HTTP response with code 200
-        """
+        """Retrieve list of boards."""
         filters_serializer = self.FilterSerializer(data=request.query_params)
         filters_serializer.is_valid(raise_exception=True)
 
@@ -88,19 +76,11 @@ class DetailBoardsApi(APIView):
     @swagger_auto_schema(
         responses={
             200: OutputSerializer(),
-            404: openapi.Response(description=""),
+            404: openapi.Response(description="board does not exist"),
         }
     )  # type: ignore
     def get(self, request: Request, board_id: int) -> Response:
-        """
-        Retrieve board details.
-
-        Returns
-        -------
-        HTTP response with code:
-        - 200 if board was found
-        - 404 if board does not exist
-        """
+        """Retrieve board details."""
         board = board_get(board_id=board_id)
         if board is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
