@@ -11,7 +11,7 @@ from rest_framework.views import APIView
 
 from authentication.models import User
 from boards.selectors import board_get, board_list
-from boards.services import add_member_to_board, create_board
+from boards.services import add_admin_to_board, add_member_to_board, create_board
 
 
 class BoardsApi(APIView):
@@ -110,4 +110,42 @@ class DetailBoardsApi(APIView):
 
         user = cast(User, request.user)
         add_member_to_board(board=board, user=user)
+        return Response(status=status.HTTP_200_OK)
+
+
+class AddAdminsBoardsApi(APIView):
+    """Assign users as board administrators."""
+
+    permission_classes = (IsAuthenticated,)
+
+    class InputSerializer(serializers.Serializer[Any]):
+        users_to_add = serializers.PrimaryKeyRelatedField(required=True, many=True, queryset=User.objects.all())
+
+    @swagger_auto_schema(  # type: ignore
+        request_body=InputSerializer,
+        responses={
+            200: openapi.Response(description="board was found"),
+            401: openapi.Response(description="user making the request if not a board admin"),
+            404: openapi.Response(description="board does not exist"),
+        },
+    )
+    def post(self, request: Request, board_id: int) -> Response:
+        """
+        Assign users as board administrators.
+
+        This action can only be performed by a current board admin. If the user to add is already an admin, nothing
+        happens and 200 is returned.
+        """
+        serializer = self.InputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        board = board_get(board_id=board_id)
+        if board is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        user = cast(User, request.user)
+        if user not in board.admins.all():
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        add_admin_to_board(**serializer.validated_data, board=board)
         return Response(status=status.HTTP_200_OK)

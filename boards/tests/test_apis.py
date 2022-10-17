@@ -7,7 +7,7 @@ from rest_framework import status
 from boards.models import Board
 from common.utils import reverse_with_query_params
 from conftest import APIClientWithUser
-from factories import BoardFactory
+from factories import BoardFactory, UserFactory
 
 
 def boards_url(query_kwargs: Optional[Dict[str, Any]] = None) -> str:
@@ -20,6 +20,10 @@ def boards_detail_url(board_id: int) -> str:
 
 def boards_join_url(board_id: int) -> str:
     return reverse("boards:board_detail_join", kwargs={"board_id": board_id})
+
+
+def boards_add_admin_url(board_id: int) -> str:
+    return reverse("boards:board_detail_add_admin", kwargs={"board_id": board_id})
 
 
 @pytest.mark.django_db
@@ -207,5 +211,42 @@ def test_join_board(api_client_with_credentials: APIClientWithUser) -> None:
 @pytest.mark.django_db
 def test_join_board_not_found(api_client_with_credentials: APIClientWithUser) -> None:
     response = api_client_with_credentials.post(boards_join_url(board_id=0))
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+def test_add_admin_to_board(api_client_with_credentials: APIClientWithUser) -> None:
+    board = BoardFactory()
+    board.admins.add(api_client_with_credentials.user)
+    user_to_add = UserFactory()
+
+    response = api_client_with_credentials.post(
+        boards_add_admin_url(board_id=board.id), data={"users_to_add": [user_to_add.id]}
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert list(board.admins.all()) == [api_client_with_credentials.user, user_to_add]
+
+
+@pytest.mark.django_db
+def test_add_admin_by_user_that_is_not_an_admin(api_client_with_credentials: APIClientWithUser) -> None:
+    board = BoardFactory()
+    user_to_add = UserFactory()
+
+    response = api_client_with_credentials.post(
+        boards_add_admin_url(board_id=board.id), data={"users_to_add": [user_to_add.id]}
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+@pytest.mark.django_db
+def test_add_admin_board_not_found(api_client_with_credentials: APIClientWithUser) -> None:
+    user_to_add = UserFactory()
+
+    response = api_client_with_credentials.post(
+        boards_add_admin_url(board_id=0), data={"users_to_add": [user_to_add.id]}
+    )
 
     assert response.status_code == status.HTTP_404_NOT_FOUND

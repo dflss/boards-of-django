@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.db.models import QuerySet
 
 from authentication.models import User
 from boards.models import Board
@@ -68,3 +69,21 @@ def add_member_to_board(
     None
     """
     board.members.add(user)
+
+
+def add_admin_to_board(*, board: Board, users_to_add: QuerySet[User]) -> None:
+    """
+    Ensure that the user is added to a board as its admin.
+
+    Parameters
+    ----------
+    board : Board that the users will be added to as admins.
+    users_to_add : : Users that will join as admins.
+
+    Returns
+    -------
+    None
+    """
+    user_ids = [user.id for user in users_to_add]
+    users_to_add = User.objects.filter(id__in=user_ids)
+    board.admins.add(*users_to_add)
