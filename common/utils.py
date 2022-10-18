@@ -4,7 +4,6 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.urls import reverse
 from django.utils.http import urlencode
 from rest_framework import exceptions, serializers
-from rest_framework.fields import Field
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer, as_serializer_error
@@ -71,13 +70,13 @@ def reverse_with_query_params(
     return base_url
 
 
-def _create_serializer_class(name: str, fields: Dict[str, Field[Any, Any, Any, Any]]) -> Type[Serializer[Any]]:
+def _create_serializer_class(name: str, fields: Dict[str, Any]) -> Type[Serializer[Any]]:
     return type(name, (serializers.Serializer,), fields)
 
 
 def inline_serializer(
     *,
-    fields: Dict[str, Field[Any, Any, Any, Any]],
+    fields: Dict[str, Any],
     data: Optional[Dict[str, Any]] = None,
     **kwargs: Optional[Dict[str, Any]],
 ) -> Serializer[Any]:

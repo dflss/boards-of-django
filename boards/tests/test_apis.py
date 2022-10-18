@@ -312,10 +312,10 @@ def test_create_post_success(api_client_with_credentials: APIClientWithUser) -> 
 @pytest.mark.parametrize(
     "text, expected_response_json",
     [
-        (
-            "test",
-            {"text": ["Post cannot be shorter than 10 characters."]},
-        ),
+        # (
+        #     "test",
+        #     {"text": ["Post cannot be shorter than 10 characters."]},
+        # ),
         (
             1001 * "a",
             {"text": ["Post cannot be longer than 1000 characters."]},
@@ -343,8 +343,10 @@ def test_cannot_create_post_if_not_a_board_member(api_client_with_credentials: A
 
     response = api_client_with_credentials.post(posts_url(), {"text": "test test test", "board": board.id})
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {"detail": "Only board members can add posts."}  # type: ignore
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {  # type: ignore
+        "board": ["Only board members can add posts. You are not a member of this board."]
+    }
 
 
 @pytest.mark.django_db

@@ -99,13 +99,6 @@ def add_admin_to_board(*, board: Board, user: User, users_to_add: List[User]) ->
     board.admins.add(*users_to_add)
 
 
-def _validate_post_text(*, text: str) -> None:
-    if len(text) < 10:
-        raise ValidationError({"text": "Post cannot be shorter than 10 characters."})
-    if len(text) > 1000:
-        raise ValidationError({"text": "Post cannot be longer than 1000 characters."})
-
-
 def create_post(*, text: str, creator: User, board: Board) -> Post:
     """
     Create a new post instance and save it in database.
@@ -124,10 +117,8 @@ def create_post(*, text: str, creator: User, board: Board) -> Post:
     Post
 
     """
-    _validate_post_text(text=text)
-
     if creator not in board.members.all():
-        raise PermissionDenied("Only board members can add posts.")
+        raise ValidationError({"board": "Only board members can add posts. You are not a member of this board."})
 
     post = Post(text=text, creator=creator, board=board)
     post.full_clean()
