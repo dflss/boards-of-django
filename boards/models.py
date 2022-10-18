@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 
 from common.models import TimestampedModel
@@ -26,13 +26,6 @@ class Board(TimestampedModel):
     admins = models.ManyToManyField(User, related_name="admins")
 
 
-def _validate_post_text(text: str) -> None:
-    if len(text) < 10:
-        raise ValidationError([{"text": "Post cannot be shorter than 10 characters."}])
-    if len(text) > 1000:
-        raise ValidationError([{"text": "Post cannot be longer than 1000 characters."}])
-
-
 class Post(TimestampedModel):
     """
     Post model.
@@ -46,6 +39,6 @@ class Post(TimestampedModel):
     board : The board to which post was posted
     """
 
-    text = models.TextField(validators=[_validate_post_text])
+    text = models.TextField(validators=[MinLengthValidator(10), MaxLengthValidator(1000)])
     creator = models.ForeignKey(User, related_name="posts_created", on_delete=models.PROTECT)
     board = models.ForeignKey(Board, related_name="posts", on_delete=models.CASCADE)

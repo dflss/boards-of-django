@@ -312,13 +312,13 @@ def test_create_post_success(api_client_with_credentials: APIClientWithUser) -> 
 @pytest.mark.parametrize(
     "text, expected_response_json",
     [
-        # (
-        #     "test",
-        #     {"text": ["Post cannot be shorter than 10 characters."]},
-        # ),
+        (
+            "test",
+            {"text": ["Ensure this value has at least 10 characters (it has 4)."]},
+        ),
         (
             1001 * "a",
-            {"text": ["Post cannot be longer than 1000 characters."]},
+            {"text": ["Ensure this value has at most 1000 characters (it has 1001)."]},
         ),
     ],
 )
