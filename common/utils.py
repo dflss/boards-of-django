@@ -1,12 +1,13 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.urls import reverse
 from django.utils.http import urlencode
-from rest_framework import exceptions
+from rest_framework import exceptions, serializers
+from rest_framework.fields import Field
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.serializers import as_serializer_error
+from rest_framework.serializers import Serializer, as_serializer_error
 from rest_framework.views import exception_handler
 
 from authentication.models import User
@@ -68,3 +69,36 @@ def reverse_with_query_params(
     if query_kwargs:
         return f"{base_url}?{urlencode(query_kwargs)}"
     return base_url
+
+
+def _create_serializer_class(name: str, fields: Dict[str, Field[Any, Any, Any, Any]]) -> Type[Serializer[Any]]:
+    return type(name, (serializers.Serializer,), fields)
+
+
+def inline_serializer(
+    *,
+    fields: Dict[str, Field[Any, Any, Any, Any]],
+    data: Optional[Dict[str, Any]] = None,
+    **kwargs: Optional[Dict[str, Any]],
+) -> Serializer[Any]:
+    """
+    Create a nested serializer.
+
+    This code is taken from Django-Styleguide: https://github.com/HackSoftware/Django-Styleguide#nested-serializers
+
+    Parameters
+    ----------
+    fields : Serializer fields
+    data : Serializer data
+
+    Returns
+    -------
+    Serializer
+
+    """
+    serializer_class = _create_serializer_class(name="", fields=fields)
+
+    if data is not None:
+        return serializer_class(data=data, **kwargs)  # type: ignore
+
+    return serializer_class(**kwargs)  # type: ignore

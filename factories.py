@@ -3,9 +3,10 @@ from typing import List
 import factory
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
+from factory import Faker, SubFactory
 
 from authentication.models import User as UserType
-from boards.models import Board
+from boards.models import Board, Post
 
 User = get_user_model()
 
@@ -38,3 +39,12 @@ class BoardFactory(factory.django.DjangoModelFactory):  # type: ignore
             return
         if extracted:
             self.admins.add(*extracted)
+
+
+class PostFactory(factory.django.DjangoModelFactory):  # type: ignore
+    class Meta:
+        model = Post
+
+    text = Faker("sentence")
+    creator = SubFactory(UserFactory)
+    board = SubFactory(BoardFactory)

@@ -23,3 +23,21 @@ class Board(TimestampedModel):
     name = models.CharField(unique=True, max_length=20)
     members = models.ManyToManyField(User, related_name="members")
     admins = models.ManyToManyField(User, related_name="admins")
+
+
+class Post(TimestampedModel):
+    """
+    Post model.
+
+    Posts are added to the board. Only board members can add new posts. All users can view all posts.
+
+    Attributes
+    ----------
+    text : The post's content
+    creator : User that created the post
+    board : The board to which post was posted
+    """
+
+    text = models.TextField(max_length=1000)
+    creator = models.ForeignKey(User, related_name="posts_created", on_delete=models.PROTECT)
+    board = models.ForeignKey(Board, related_name="posts", on_delete=models.CASCADE)
