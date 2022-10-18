@@ -4,10 +4,10 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 
-from boards.models import Board
+from boards.models import Board, Post
 from common.utils import reverse_with_query_params
 from conftest import APIClientWithUser
-from factories import BoardFactory, UserFactory
+from factories import BoardFactory, PostFactory, UserFactory
 
 
 def boards_url(query_kwargs: Optional[Dict[str, Any]] = None) -> str:
@@ -24,6 +24,14 @@ def boards_join_url(board_id: int) -> str:
 
 def boards_add_admin_url(board_id: int) -> str:
     return reverse("boards:board-detail-add-admin", kwargs={"board_id": board_id})
+
+
+def posts_url(query_kwargs: Optional[Dict[str, Any]] = None) -> str:
+    return reverse_with_query_params("boards:posts", query_kwargs=query_kwargs)
+
+
+def posts_detail_url(post_id: int) -> str:
+    return reverse("boards:post-detail", kwargs={"post_id": post_id})
 
 
 @pytest.mark.django_db
@@ -280,5 +288,153 @@ def test_add_admin_board_not_found(api_client_with_credentials: APIClientWithUse
     response = api_client_with_credentials.post(
         boards_add_admin_url(board_id=0), data={"users_to_add": [user_to_add.id]}
     )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+def test_create_post_success(api_client_with_credentials: APIClientWithUser) -> None:
+    board = BoardFactory()
+    board.members.add(api_client_with_credentials.user)
+
+    response = api_client_with_credentials.post(posts_url(), {"text": "test test test", "board": board.id})
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert Post.objects.count() == 1
+
+    post = Post.objects.first()
+
+    assert post.creator == api_client_with_credentials.user  # type: ignore
+    assert post.board == board  # type: ignore
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "text, expected_response_json",
+    [
+        (
+            "test",
+            {"text": ["Ensure this value has at least 10 characters (it has 4)."]},
+        ),
+        (
+            1001 * "a",
+            {"text": ["Ensure this value has at most 1000 characters (it has 1001)."]},
+        ),
+    ],
+)
+def test_create_post_validation_failed(
+    api_client_with_credentials: APIClientWithUser,
+    text: str,
+    expected_response_json: Dict[str, List[str]],
+) -> None:
+    board = BoardFactory()
+    board.members.add(api_client_with_credentials.user)
+
+    response = api_client_with_credentials.post(posts_url(), {"text": text, "board": board.id})
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == expected_response_json  # type: ignore[attr-defined]
+    assert Post.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_cannot_create_post_if_not_a_board_member(api_client_with_credentials: APIClientWithUser) -> None:
+    board = BoardFactory()
+
+    response = api_client_with_credentials.post(posts_url(), {"text": "test test test", "board": board.id})
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == {  # type: ignore
+        "board": ["Only board members can add posts. You are not a member of this board."]
+    }
+
+
+@pytest.mark.django_db
+def test_get_post_list(api_client_with_credentials: APIClientWithUser) -> None:
+    post_1 = PostFactory()
+    post_2 = PostFactory()
+
+    response = api_client_with_credentials.get(posts_url())
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["results"]) == 2
+    assert response.json()["results"] == [
+        {"text": post_2.text, "creator": {"id": post_2.creator.id, "username": post_2.creator.username}},
+        {"text": post_1.text, "creator": {"id": post_1.creator.id, "username": post_1.creator.username}},
+    ]
+
+
+@pytest.mark.django_db
+def test_get_post_list_filter_by_text(api_client_with_credentials: APIClientWithUser) -> None:
+    post = PostFactory(text="Text that I am looking for")
+    PostFactory(text="Something unimportant")
+
+    response = api_client_with_credentials.get(posts_url(query_kwargs={"text": "I am looking"}))
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["results"]) == 1
+    assert response.json()["results"] == [
+        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}},
+    ]
+
+
+@pytest.mark.django_db
+def test_get_post_list_filter_by_board(api_client_with_credentials: APIClientWithUser) -> None:
+    post = PostFactory()
+    PostFactory()
+
+    response = api_client_with_credentials.get(posts_url(query_kwargs={"board": post.board.id}))
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["results"]) == 1
+    assert response.json()["results"] == [
+        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}},
+    ]
+
+
+@pytest.mark.django_db
+def test_get_post_list_filter_own_posts(api_client_with_credentials: APIClientWithUser) -> None:
+    post = PostFactory(creator=api_client_with_credentials.user)
+    PostFactory(creator=UserFactory())
+
+    response = api_client_with_credentials.get(posts_url(query_kwargs={"is_creator": True}))
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["results"]) == 1
+    assert response.json()["results"] == [
+        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}},
+    ]
+
+
+@pytest.mark.django_db
+def test_get_post_list_filter_not_own_posts(api_client_with_credentials: APIClientWithUser) -> None:
+    PostFactory(creator=api_client_with_credentials.user)
+    post = PostFactory(creator=UserFactory())
+
+    response = api_client_with_credentials.get(posts_url(query_kwargs={"is_creator": False}))
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()["results"]) == 1
+    assert response.json()["results"] == [
+        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}},
+    ]
+
+
+@pytest.mark.django_db
+def test_get_post_detail_success(api_client_with_credentials: APIClientWithUser) -> None:
+    post = PostFactory()
+
+    response = api_client_with_credentials.get(posts_detail_url(post_id=post.pk))
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "text": post.text,
+        "creator": {"id": post.creator.id, "username": post.creator.username},
+    }
+
+
+@pytest.mark.django_db
+def test_get_post_detail_not_found(api_client_with_credentials: APIClientWithUser) -> None:
+    response = api_client_with_credentials.get(posts_detail_url(post_id=0))
 
     assert response.status_code == status.HTTP_404_NOT_FOUND

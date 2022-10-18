@@ -8,10 +8,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from authentication.models import User
-from boards.selectors import board_get, board_list
-from boards.services import add_admin_to_board, add_member_to_board, create_board
+from boards.models import Board
+from boards.selectors import board_get, board_list, post_get, post_list
+from boards.services import add_admin_to_board, add_member_to_board, create_board, create_post
 from common.pagination import LimitOffsetPagination, get_paginated_response
 from common.utils import RequestWithUser as Request
+from common.utils import inline_serializer
 
 
 class BoardsApi(APIView):
@@ -158,3 +160,98 @@ class AddAdminsBoardsApi(APIView):
 
         add_admin_to_board(**serializer.validated_data, board=board, user=user)
         return Response(status=status.HTTP_200_OK)
+
+
+class PostsApi(APIView):
+    """Manage posts."""
+
+    permission_classes = (IsAuthenticated,)
+
+    class InputSerializer(serializers.Serializer[Any]):
+        text = serializers.CharField(required=True)
+        board = serializers.PrimaryKeyRelatedField(required=False, queryset=Board.objects.all())
+
+    @swagger_auto_schema(  # type: ignore
+        request_body=InputSerializer,
+        responses={
+            201: openapi.Response(description="post was successfully created"),
+            400: openapi.Response(description="input validation failed"),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        """
+        Create a new post.
+
+        The user must be a board member.
+        Input is considered valid when the text is at least 10 and at maximum 1000 characters long.
+        """
+        serializer = self.InputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        create_post(**serializer.validated_data, creator=request.user)
+
+        return Response(status=status.HTTP_201_CREATED)
+
+    class Pagination(LimitOffsetPagination):
+        default_limit = 10
+
+    class FilterSerializer(serializers.Serializer[Any]):
+        text = serializers.CharField(required=False)
+        board = serializers.PrimaryKeyRelatedField(required=False, queryset=Board.objects.all())
+        is_creator = serializers.BooleanField(allow_null=True, default=None, required=False)
+
+    class OutputSerializer(serializers.Serializer[Any]):
+        text = serializers.CharField(required=True)
+        creator = inline_serializer(
+            fields={
+                "id": serializers.IntegerField(),
+                "username": serializers.CharField(),
+            },
+        )
+
+    @swagger_auto_schema(responses={200: OutputSerializer(many=True)})  # type: ignore
+    def get(self, request: Request) -> Response:
+        """Retrieve list of posts."""
+        filters_serializer = self.FilterSerializer(data=request.query_params)
+        filters_serializer.is_valid(raise_exception=True)
+
+        posts = post_list(**filters_serializer.validated_data, user=request.user)
+
+        return get_paginated_response(
+            pagination_class=self.Pagination,
+            serializer_class=self.OutputSerializer,
+            queryset=posts,
+            request=request,
+            view=self,
+        )
+
+
+class DetailPostsApi(APIView):
+    """View post details."""
+
+    permission_classes = (IsAuthenticated,)
+
+    class OutputSerializer(serializers.Serializer[Any]):
+        text = serializers.CharField(required=True)
+        creator = inline_serializer(
+            fields={
+                "id": serializers.IntegerField(),
+                "username": serializers.CharField(),
+            },
+        )
+
+    @swagger_auto_schema(  # type: ignore
+        responses={
+            200: OutputSerializer(),
+            404: openapi.Response(description="post does not exist"),
+        }
+    )
+    def get(self, request: Request, post_id: int) -> Response:
+        """Retrieve post details."""
+        post = post_get(post_id=post_id)
+        if post is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        data = self.OutputSerializer(post).data
+
+        return Response(data=data, status=status.HTTP_200_OK)
