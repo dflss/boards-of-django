@@ -7,18 +7,6 @@ from authentication.models import User
 from boards.models import Board, Post
 
 
-def _validate_board_name(*, name: str) -> None:
-    if len(name) < 3:
-        raise ValidationError({"name": "Board name cannot be shorter than 3 characters."})
-    if len(name) > 20:
-        raise ValidationError({"name": "Board name cannot be longer than 20 characters."})
-    for char in name:
-        if not (char.isalpha() or char == "_"):
-            raise ValidationError(
-                {"name": "Board name can only contain alphabet letters (a-z) and underscore (_) character."}
-            )
-
-
 def create_board(
     *,
     name: str,
@@ -41,8 +29,6 @@ def create_board(
     Board
 
     """
-    _validate_board_name(name=name)
-
     board = Board(name=name)
     board.full_clean()
     board.save()

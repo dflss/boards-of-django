@@ -1,10 +1,19 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 
 from common.models import TimestampedModel
 
 User = get_user_model()
+
+
+def _validate_contains_allowed_characters(name: str) -> None:
+    for char in name:
+        if not (char.isalpha() or char == "_"):
+            raise ValidationError(
+                [{"name": "Board name can only contain alphabet letters (a-z) and underscore (_) character."}]
+            )
 
 
 class Board(TimestampedModel):
@@ -21,7 +30,9 @@ class Board(TimestampedModel):
     admins : Users that are administrators of the board
     """
 
-    name = models.CharField(unique=True, max_length=20)
+    name = models.CharField(
+        unique=True, max_length=20, validators=[MinLengthValidator(3), _validate_contains_allowed_characters]
+    )
     members = models.ManyToManyField(User, related_name="members")
     admins = models.ManyToManyField(User, related_name="admins")
 

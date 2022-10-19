@@ -69,13 +69,13 @@ def test_create_board_success(api_client_with_credentials: APIClientWithUser, da
             {
                 "name": "a",
             },
-            {"name": ["Board name cannot be shorter than 3 characters."]},
+            {"name": ["Ensure this value has at least 3 characters (it has 1)."]},
         ),
         (
             {
                 "name": 21 * "a",
             },
-            {"name": ["Board name cannot be longer than 20 characters."]},
+            {"name": ["Ensure this value has at most 20 characters (it has 21)."]},
         ),
         (
             {
