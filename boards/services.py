@@ -1,10 +1,12 @@
-from typing import List
+from typing import Any, Dict, List
 
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from rest_framework.exceptions import PermissionDenied
 
 from authentication.models import User
 from boards.models import Board, Post
+from common.services import model_update
 
 
 def create_board(
@@ -109,5 +111,52 @@ def create_post(*, text: str, creator: User, board: Board) -> Post:
     post = Post(text=text, creator=creator, board=board)
     post.full_clean()
     post.save()
+
+    return post
+
+
+@transaction.atomic
+def update_post(*, post: Post, data: Dict[str, Any], user: User) -> Post:
+    """
+    Update a post.
+
+    Parameters
+    ----------
+    post : Post to update
+    data: Fields to update and their values
+    user: User that initiates post edition
+
+    Returns
+    -------
+    Post
+
+    """
+    if user != post.creator:
+        raise PermissionDenied("Only post creators can edit posts. You are not a creator of this post.")
+
+    post, _ = model_update(instance=post, fields=["text"], data=data)
+
+    return post
+
+
+@transaction.atomic
+def delete_post(*, post: Post, user: User) -> Post:
+    """
+    Update a post.
+
+    Parameters
+    ----------
+    post : Post to update
+    user: User that initiates post deletion
+
+    Returns
+    -------
+    Post
+
+    """
+    if user != post.creator:
+        raise PermissionDenied("Only post creators can delete posts. You are not a creator of this post.")
+
+    post.delete()
 
     return post
