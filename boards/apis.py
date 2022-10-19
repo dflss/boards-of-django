@@ -274,7 +274,7 @@ class DetailPostsApi(APIView):
             404: openapi.Response(description="post does not exist"),
         }
     )
-    def put(self, request: Request, post_id: int) -> Response:
+    def patch(self, request: Request, post_id: int) -> Response:
         """Update post."""
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

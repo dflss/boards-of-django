@@ -444,7 +444,7 @@ def test_get_post_detail_not_found(api_client_with_credentials: APIClientWithUse
 def test_update_post_success(api_client_with_credentials: APIClientWithUser) -> None:
     post = PostFactory(text="old post content", creator=api_client_with_credentials.user)
 
-    response = api_client_with_credentials.put(posts_detail_url(post_id=post.pk), data={"text": "new post content"})
+    response = api_client_with_credentials.patch(posts_detail_url(post_id=post.pk), data={"text": "new post content"})
     post.refresh_from_db()
 
     assert response.status_code == status.HTTP_200_OK
@@ -474,7 +474,7 @@ def test_update_post_validation_failed(
     board.members.add(api_client_with_credentials.user)
     post = PostFactory(text="old post content", creator=api_client_with_credentials.user)
 
-    response = api_client_with_credentials.put(posts_detail_url(post_id=post.pk), data={"text": text})
+    response = api_client_with_credentials.patch(posts_detail_url(post_id=post.pk), data={"text": text})
     post.refresh_from_db()
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -486,7 +486,7 @@ def test_update_post_validation_failed(
 def test_update_post_by_non_creator(api_client_with_credentials: APIClientWithUser) -> None:
     post = PostFactory(text="old post content", creator=UserFactory())
 
-    response = api_client_with_credentials.put(posts_detail_url(post_id=post.pk), data={"text": "new post content"})
+    response = api_client_with_credentials.patch(posts_detail_url(post_id=post.pk), data={"text": "new post content"})
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json() == {  # type: ignore[attr-defined]
@@ -496,7 +496,7 @@ def test_update_post_by_non_creator(api_client_with_credentials: APIClientWithUs
 
 @pytest.mark.django_db
 def test_update_post_not_found(api_client_with_credentials: APIClientWithUser) -> None:
-    response = api_client_with_credentials.put(posts_detail_url(post_id=0), data={"text": "new post content"})
+    response = api_client_with_credentials.patch(posts_detail_url(post_id=0), data={"text": "new post content"})
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
@@ -508,7 +508,7 @@ def test_delete_post_success(api_client_with_credentials: APIClientWithUser) -> 
     response = api_client_with_credentials.delete(posts_detail_url(post_id=post.id))
 
     assert response.status_code == status.HTTP_204_NO_CONTENT
-    assert Post.objects.filter(id=post.id).first() is None
+    assert not Post.objects.filter(id=post.id).exists()
 
 
 @pytest.mark.django_db
@@ -518,7 +518,7 @@ def test_delete_post_by_non_creator(api_client_with_credentials: APIClientWithUs
     response = api_client_with_credentials.delete(posts_detail_url(post_id=post.id))
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert Post.objects.filter(id=post.id).first() is not None
+    assert Post.objects.filter(id=post.id).exists()
 
 
 @pytest.mark.django_db
