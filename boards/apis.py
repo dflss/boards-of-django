@@ -10,7 +10,14 @@ from rest_framework.views import APIView
 from authentication.models import User
 from boards.models import Board
 from boards.selectors import board_get, board_list, post_get, post_list
-from boards.services import add_admin_to_board, add_member_to_board, create_board, create_post
+from boards.services import (
+    add_admin_to_board,
+    add_member_to_board,
+    create_board,
+    create_post,
+    delete_post,
+    update_post,
+)
 from common.pagination import LimitOffsetPagination, get_paginated_response
 from common.utils import RequestWithUser as Request
 from common.utils import inline_serializer
@@ -227,7 +234,7 @@ class PostsApi(APIView):
 
 
 class DetailPostsApi(APIView):
-    """View post details."""
+    """Manage post details."""
 
     permission_classes = (IsAuthenticated,)
 
@@ -255,3 +262,44 @@ class DetailPostsApi(APIView):
         data = self.OutputSerializer(post).data
 
         return Response(data=data, status=status.HTTP_200_OK)
+
+    class InputSerializer(serializers.Serializer[Any]):
+        text = serializers.CharField(required=True)
+
+    @swagger_auto_schema(  # type: ignore
+        responses={
+            200: openapi.Response(description="post was updated"),
+            400: openapi.Response(description="validation failed"),
+            403: openapi.Response(description="user is not the post creator"),
+            404: openapi.Response(description="post does not exist"),
+        }
+    )
+    def put(self, request: Request, post_id: int) -> Response:
+        """Update post."""
+        serializer = self.InputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        post = post_get(post_id=post_id)
+        if post is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        update_post(post=post, data=serializer.validated_data, user=request.user)
+
+        return Response(status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(  # type: ignore
+        responses={
+            204: openapi.Response(description="post was deleted"),
+            403: openapi.Response(description="user is not the post creator"),
+            404: openapi.Response(description="post does not exist"),
+        }
+    )
+    def delete(self, request: Request, post_id: int) -> Response:
+        """Delete post."""
+        post = post_get(post_id=post_id)
+        if post is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        delete_post(post=post, user=request.user)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
