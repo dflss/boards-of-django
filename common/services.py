@@ -17,7 +17,7 @@ def model_update(
     Parameters
     ----------
     instance : Instance to be updated
-    fields : Fields to be updated
+    fields : Fields to be updated. Note that fields with auto_add=True are automatically updated
     data : Dictionary with fields to be updated and their new values
 
     Returns
