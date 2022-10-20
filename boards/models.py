@@ -53,3 +53,4 @@ class Post(TimestampedModel):
     text = models.TextField(validators=[MinLengthValidator(10), MaxLengthValidator(1000)])
     creator = models.ForeignKey(User, related_name="posts_created", on_delete=models.PROTECT)
     board = models.ForeignKey(Board, related_name="posts", on_delete=models.CASCADE)
+    edited = models.BooleanField(default=False)
