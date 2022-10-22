@@ -25,6 +25,14 @@ docker-compose exec django python manage.py migrate
 
 Then, view the site at [http://localhost/](http://localhost/)
 
+You can load fixtures to have to initial data to work with:
+
+```
+docker-compose exec django python manage.py migrate loaddata fixtures.json
+```
+
+Each user in the sample fixtures has a password "password".
+
 ## Testing
 
 ```
