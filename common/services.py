@@ -1,5 +1,7 @@
 from typing import Any, Dict, List, Tuple
 
+from django.db.models import DateTimeField
+
 from common.types import DjangoModelType
 
 
@@ -15,7 +17,7 @@ def model_update(
     Parameters
     ----------
     instance : Instance to be updated
-    fields : Fields to be updated
+    fields : Fields to be updated. Note that fields with auto_add=True are automatically updated
     data : Dictionary with fields to be updated and their new values
 
     Returns
@@ -41,6 +43,14 @@ def model_update(
         # Update only the fields that are meant to be updated.
         # Django docs reference:
         # https://docs.djangoproject.com/en/dev/ref/models/instances/#specifying-which-fields-to-save
+        # As per Django docs, the date/time fields with auto_now=True will not be updated unless they are included in
+        # the update_fields, so we need to include them.
+        for model_field in instance._meta.fields:
+            # The type stubs for DateField and TimeField are missing the attributes "auto_now_add" and "auto_now".
+            # This also effects DateTimeField, which inherits from DateField.
+            # Open issue: https://github.com/typeddjango/django-stubs/issues/479
+            if type(model_field) == DateTimeField and model_field.auto_now is True:  # type: ignore
+                fields.append(model_field.name)
         instance.save(update_fields=fields)
 
     return instance, has_updated
