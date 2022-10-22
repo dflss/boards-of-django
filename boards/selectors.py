@@ -84,7 +84,7 @@ def post_list(
         else:
             qs = qs.filter(~Q(creator=user))
 
-    return qs.order_by("-created_at")
+    return qs.order_by("-id")
 
 
 def post_get(*, post_id: int) -> Optional[Post]:
