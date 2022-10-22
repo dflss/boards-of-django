@@ -608,9 +608,10 @@ def test_create_comment_success(api_client_with_credentials: APIClientWithUser) 
 
     comment = Comment.objects.first()
 
-    assert comment.creator == api_client_with_credentials.user  # type: ignore
-    assert comment.post == post  # type: ignore
-    assert comment.parent is None  # type: ignore
+    assert comment is not None
+    assert comment.creator == api_client_with_credentials.user
+    assert comment.post == post
+    assert comment.parent is None
 
 
 @pytest.mark.django_db
@@ -627,9 +628,10 @@ def test_create_comment_reply_success(api_client_with_credentials: APIClientWith
 
     comment = Comment.objects.last()
 
-    assert comment.creator == api_client_with_credentials.user  # type: ignore
-    assert comment.post == comment_parent.post  # type: ignore
-    assert comment.parent == comment_parent  # type: ignore
+    assert comment is not None
+    assert comment.creator == api_client_with_credentials.user
+    assert comment.post == comment_parent.post
+    assert comment.parent == comment_parent
 
 
 @pytest.mark.django_db

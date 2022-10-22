@@ -170,8 +170,8 @@ def create_comment(*, text: str, creator: User, post: Post, parent: Optional[Com
     """
     Create a new comment instance and save it in database.
 
-    Before creation, comment content be validated. Text must contain 1-1000 characters. The user must be a board member
-    to create a comment.
+    Before creation, comment content will be validated. Text must contain 1-1000 characters. The user must be a board
+    member to create a comment.
 
     Parameters
     ----------
@@ -184,7 +184,7 @@ def create_comment(*, text: str, creator: User, post: Post, parent: Optional[Com
     -------
     Post
     """
-    if creator not in post.board.members.all():
+    if not post.board.members.filter(id=creator.id).exists():
         raise ValidationError({"board": "Only board members can add comments. You are not a member of this board."})
 
     if parent is not None and parent.post != post:

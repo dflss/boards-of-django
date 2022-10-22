@@ -102,16 +102,16 @@ def post_get(*, post_id: int) -> Optional[Post]:
 
 
 def comment_list(
-    *, user: User, text: Optional[str] = None, post: Optional[Post] = None, parent: Optional[Comment] = None
+    *, text: Optional[str] = None, post: Optional[Post] = None, parent: Optional[Comment] = None
 ) -> QuerySet[Comment]:
-    """Fetch list of comments for the given user.
+    """Fetch a filtered list of comments.
 
     Parameters
     ----------
-    user: Given user
     text : The text that the comment contains
     post : Post to which the comments belong
-    parent : The comment whose replies should be returned
+    parent : The comment whose replies should be returned. If no parent is provided, by default only root comments
+        (those that are not replies to any other comment) are returned.
 
     Returns
     -------
@@ -127,7 +127,7 @@ def comment_list(
     else:
         qs = qs.filter(parent__isnull=True)
 
-    return qs.order_by("created_at")
+    return qs.order_by("id")
 
 
 def comment_get(*, comment_id: int) -> Optional[Comment]:

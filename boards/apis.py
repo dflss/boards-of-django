@@ -368,7 +368,7 @@ class CommentsApi(APIView):
         filters_serializer = self.FilterSerializer(data=request.query_params)
         filters_serializer.is_valid(raise_exception=True)
 
-        comments = comment_list(**filters_serializer.validated_data, user=request.user)
+        comments = comment_list(**filters_serializer.validated_data)
 
         return get_paginated_response(
             pagination_class=self.Pagination,

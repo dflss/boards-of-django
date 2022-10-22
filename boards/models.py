@@ -59,9 +59,9 @@ class Post(TimestampedModel):
 
 class Comment(TimestampedModel):
     """
-    Comment model.
+    Comments are added to posts.
 
-    Comment are added to posts. Only board members can add new comments. All users can view all comments.
+    Only board members can add new comments. All users can view all comments.
 
     Attributes
     ----------
@@ -74,4 +74,6 @@ class Comment(TimestampedModel):
     text = models.TextField(validators=[MaxLengthValidator(1000)])
     creator = models.ForeignKey(User, related_name="comments_created", on_delete=models.PROTECT)
     post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)
-    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, default=None)
+    parent = models.ForeignKey(
+        "self", related_name="replies", on_delete=models.CASCADE, null=True, blank=True, default=None
+    )
