@@ -215,6 +215,7 @@ class PostsApi(APIView):
                 "username": serializers.CharField(),
             },
         )
+        edited = serializers.BooleanField()
 
     @swagger_auto_schema(responses={200: OutputSerializer(many=True)})  # type: ignore
     def get(self, request: Request) -> Response:
@@ -246,6 +247,7 @@ class DetailPostsApi(APIView):
                 "username": serializers.CharField(),
             },
         )
+        edited = serializers.BooleanField()
 
     @swagger_auto_schema(  # type: ignore
         responses={

@@ -48,8 +48,10 @@ class Post(TimestampedModel):
     text : The post's content
     creator : User that created the post
     board : The board to which post was posted
+    edited : A flag that indicates if a post was edited or not
     """
 
     text = models.TextField(validators=[MinLengthValidator(10), MaxLengthValidator(1000)])
     creator = models.ForeignKey(User, related_name="posts_created", on_delete=models.PROTECT)
     board = models.ForeignKey(Board, related_name="posts", on_delete=models.CASCADE)
+    edited = models.BooleanField(default=False)

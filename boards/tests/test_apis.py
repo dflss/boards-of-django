@@ -359,8 +359,16 @@ def test_get_post_list(api_client_with_credentials: APIClientWithUser) -> None:
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()["results"]) == 2
     assert response.json()["results"] == [
-        {"text": post_2.text, "creator": {"id": post_2.creator.id, "username": post_2.creator.username}},
-        {"text": post_1.text, "creator": {"id": post_1.creator.id, "username": post_1.creator.username}},
+        {
+            "text": post_2.text,
+            "creator": {"id": post_2.creator.id, "username": post_2.creator.username},
+            "edited": False,
+        },
+        {
+            "text": post_1.text,
+            "creator": {"id": post_1.creator.id, "username": post_1.creator.username},
+            "edited": False,
+        },
     ]
 
 
@@ -374,7 +382,7 @@ def test_get_post_list_filter_by_text(api_client_with_credentials: APIClientWith
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()["results"]) == 1
     assert response.json()["results"] == [
-        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}},
+        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}, "edited": False},
     ]
 
 
@@ -388,7 +396,7 @@ def test_get_post_list_filter_by_board(api_client_with_credentials: APIClientWit
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()["results"]) == 1
     assert response.json()["results"] == [
-        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}},
+        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}, "edited": False},
     ]
 
 
@@ -402,7 +410,7 @@ def test_get_post_list_filter_own_posts(api_client_with_credentials: APIClientWi
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()["results"]) == 1
     assert response.json()["results"] == [
-        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}},
+        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}, "edited": False},
     ]
 
 
@@ -416,7 +424,7 @@ def test_get_post_list_filter_not_own_posts(api_client_with_credentials: APIClie
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()["results"]) == 1
     assert response.json()["results"] == [
-        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}},
+        {"text": post.text, "creator": {"id": post.creator.id, "username": post.creator.username}, "edited": False},
     ]
 
 
@@ -430,6 +438,7 @@ def test_get_post_detail_success(api_client_with_credentials: APIClientWithUser)
     assert response.json() == {
         "text": post.text,
         "creator": {"id": post.creator.id, "username": post.creator.username},
+        "edited": False,
     }
 
 
@@ -449,6 +458,19 @@ def test_update_post_success(api_client_with_credentials: APIClientWithUser) -> 
 
     assert response.status_code == status.HTTP_200_OK
     assert post.text == "new post content"
+    assert post.edited is True
+
+
+@pytest.mark.django_db
+def test_update_post_nothing_changed(api_client_with_credentials: APIClientWithUser) -> None:
+    post = PostFactory(text="old post content", creator=api_client_with_credentials.user)
+
+    response = api_client_with_credentials.patch(posts_detail_url(post_id=post.pk), data={"text": "old post content"})
+    post.refresh_from_db()
+
+    assert response.status_code == status.HTTP_200_OK
+    assert post.text == "old post content"
+    assert post.edited is False
 
 
 @pytest.mark.django_db
@@ -526,3 +548,41 @@ def test_delete_post_not_found(api_client_with_credentials: APIClientWithUser) -
     response = api_client_with_credentials.delete(posts_detail_url(post_id=0))
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+@pytest.mark.django_db
+def test_get_post_detail_updated_post_has_edited_flag_set(api_client_with_credentials: APIClientWithUser) -> None:
+    post = PostFactory(text="old post content", creator=api_client_with_credentials.user)
+    api_client_with_credentials.patch(posts_detail_url(post_id=post.pk), data={"text": "new post content"})
+
+    response = api_client_with_credentials.get(posts_detail_url(post_id=post.pk))
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {
+        "text": "new post content",
+        "creator": {"id": post.creator.id, "username": post.creator.username},
+        "edited": True,
+    }
+
+
+@pytest.mark.django_db
+def test_get_post_list_updated_post_has_edited_flag_set(api_client_with_credentials: APIClientWithUser) -> None:
+    post_1 = PostFactory(text="old post content", creator=api_client_with_credentials.user)
+    post_2 = PostFactory()
+    api_client_with_credentials.patch(posts_detail_url(post_id=post_1.pk), data={"text": "new post content"})
+
+    response = api_client_with_credentials.get(posts_url())
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["results"] == [
+        {
+            "text": post_2.text,
+            "creator": {"id": post_2.creator.id, "username": post_2.creator.username},
+            "edited": False,
+        },
+        {
+            "text": "new post content",
+            "creator": {"id": post_1.creator.id, "username": post_1.creator.username},
+            "edited": True,
+        },
+    ]
