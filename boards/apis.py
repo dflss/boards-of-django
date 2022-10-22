@@ -64,7 +64,7 @@ class BoardsApi(APIView):
         is_admin = serializers.BooleanField(required=False)
 
     class OutputSerializer(serializers.Serializer[Any]):
-        name = serializers.CharField(required=True)
+        name = serializers.CharField()
 
     @swagger_auto_schema(responses={200: OutputSerializer(many=True)})  # type: ignore
     def get(self, request: Request) -> Response:
@@ -89,7 +89,7 @@ class DetailBoardsApi(APIView):
     permission_classes = (IsAuthenticated,)
 
     class OutputSerializer(serializers.Serializer[Any]):
-        name = serializers.CharField(required=True)
+        name = serializers.CharField()
 
     @swagger_auto_schema(
         responses={
@@ -209,7 +209,7 @@ class PostsApi(APIView):
         is_creator = serializers.BooleanField(allow_null=True, default=None, required=False)
 
     class OutputSerializer(serializers.Serializer[Any]):
-        text = serializers.CharField(required=True)
+        text = serializers.CharField()
         creator = inline_serializer(
             fields={
                 "id": serializers.IntegerField(),
@@ -241,7 +241,7 @@ class DetailPostsApi(APIView):
     permission_classes = (IsAuthenticated,)
 
     class OutputSerializer(serializers.Serializer[Any]):
-        text = serializers.CharField(required=True)
+        text = serializers.CharField()
         creator = inline_serializer(
             fields={
                 "id": serializers.IntegerField(),
@@ -350,7 +350,7 @@ class CommentsApi(APIView):
         parent = serializers.PrimaryKeyRelatedField(required=False, queryset=Comment.objects.all())  # type:ignore
 
     class OutputSerializer(serializers.Serializer[Any]):
-        text = serializers.CharField(required=True)
+        text = serializers.CharField()
         creator = inline_serializer(
             fields={
                 "id": serializers.IntegerField(),
@@ -385,7 +385,7 @@ class DetailCommentsApi(APIView):
     permission_classes = (IsAuthenticated,)
 
     class OutputSerializer(serializers.Serializer[Any]):
-        text = serializers.CharField(required=True)
+        text = serializers.CharField()
         creator = inline_serializer(
             fields={
                 "id": serializers.IntegerField(),
