@@ -1,11 +1,11 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from rest_framework.exceptions import PermissionDenied
 
 from authentication.models import User
-from boards.models import Board, Post
+from boards.models import Board, Comment, Post
 from common.services import model_update
 
 
@@ -164,3 +164,34 @@ def delete_post(*, post: Post, user: User) -> Post:
     post.delete()
 
     return post
+
+
+def create_comment(*, text: str, creator: User, post: Post, parent: Optional[Comment] = None) -> Comment:
+    """
+    Create a new comment instance and save it in database.
+
+    Before creation, comment content will be validated. Text must contain 1-1000 characters. The user must be a board
+    member to create a comment.
+
+    Parameters
+    ----------
+    text : Post's content
+    creator : User that creates the comment
+    post: Post which is being commented
+    parent: Comment which is being replied to
+
+    Returns
+    -------
+    Post
+    """
+    if not post.board.members.filter(id=creator.id).exists():
+        raise ValidationError({"board": "Only board members can add comments. You are not a member of this board."})
+
+    if parent is not None and parent.post != post:
+        raise ValidationError({"parent": "The parent comment does not belong to the post specified."})
+
+    comment = Comment(text=text, creator=creator, post=post, parent=parent)
+    comment.full_clean()
+    comment.save()
+
+    return comment

@@ -55,3 +55,25 @@ class Post(TimestampedModel):
     creator = models.ForeignKey(User, related_name="posts_created", on_delete=models.PROTECT)
     board = models.ForeignKey(Board, related_name="posts", on_delete=models.CASCADE)
     edited = models.BooleanField(default=False)
+
+
+class Comment(TimestampedModel):
+    """
+    Comments are added to posts.
+
+    Only board members can add new comments. All users can view all comments.
+
+    Attributes
+    ----------
+    text : The comment's content
+    creator : User that created the comment
+    post : The post which is being commented
+    parent: The comment which is being replied to
+    """
+
+    text = models.TextField(validators=[MaxLengthValidator(1000)])
+    creator = models.ForeignKey(User, related_name="comments_created", on_delete=models.PROTECT)
+    post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)
+    parent = models.ForeignKey(
+        "self", related_name="replies", on_delete=models.CASCADE, null=True, blank=True, default=None
+    )

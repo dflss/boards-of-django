@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.db.models.query import QuerySet
 
 from authentication.models import User
-from boards.models import Board, Post
+from boards.models import Board, Comment, Post
 
 
 def board_list(
@@ -99,3 +99,46 @@ def post_get(*, post_id: int) -> Optional[Post]:
     Post's instance or None if the post does not exist.
     """
     return Post.objects.filter(id=post_id).first()
+
+
+def comment_list(
+    *, text: Optional[str] = None, post: Optional[Post] = None, parent: Optional[Comment] = None
+) -> QuerySet[Comment]:
+    """Fetch a filtered list of comments.
+
+    Parameters
+    ----------
+    text : The text that the comment contains
+    post : Post to which the comments belong
+    parent : The comment whose replies should be returned. If no parent is provided, by default only root comments
+        (those that are not replies to any other comment) are returned.
+
+    Returns
+    -------
+    Filtered comment queryset.
+    """
+    qs = Comment.objects.all()
+    if text is not None:
+        qs = qs.filter(text__icontains=text)
+    if post is not None:
+        qs = qs.filter(post=post)
+    if parent is not None:
+        qs = qs.filter(parent=parent)
+    else:
+        qs = qs.filter(parent__isnull=True)
+
+    return qs.order_by("id")
+
+
+def comment_get(*, comment_id: int) -> Optional[Comment]:
+    """Get the comment instance with given id.
+
+    Parameters
+    ----------
+    comment_id : Comment's pk.
+
+    Returns
+    -------
+    Comment's instance or None if the comment does not exist.
+    """
+    return Comment.objects.filter(id=comment_id).first()
