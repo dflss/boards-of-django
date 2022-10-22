@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("boards", "0003_alter_board_name"),
+        ("boards", "0004_post_edited"),
     ]
 
     operations = [

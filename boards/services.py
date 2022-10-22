@@ -134,7 +134,11 @@ def update_post(*, post: Post, data: Dict[str, Any], user: User) -> Post:
     if user != post.creator:
         raise PermissionDenied("Only post creators can edit posts. You are not a creator of this post.")
 
-    post, _ = model_update(instance=post, fields=["text"], data=data)
+    post, has_updated = model_update(instance=post, fields=["text"], data=data)
+
+    if has_updated:
+        post.edited = True
+        post.save()
 
     return post
 
