@@ -25,6 +25,8 @@ repos:
         - drf_yasg
         - django-filter
         - django-filter-stubs
+        - celery
+        - celery-stubs
       args: [--strict]
       exclude: '^env/|migrations|.git|.mypy_cache|pytest_cache'
 
