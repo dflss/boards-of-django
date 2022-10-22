@@ -6,7 +6,7 @@ from django.contrib.auth.hashers import make_password
 from factory import Faker, SubFactory
 
 from authentication.models import User as UserType
-from boards.models import Board, Post
+from boards.models import Board, Comment, Post
 
 User = get_user_model()
 
@@ -48,3 +48,12 @@ class PostFactory(factory.django.DjangoModelFactory):  # type: ignore
     text = Faker("sentence")
     creator = SubFactory(UserFactory)
     board = SubFactory(BoardFactory)
+
+
+class CommentFactory(factory.django.DjangoModelFactory):  # type: ignore
+    class Meta:
+        model = Comment
+
+    text = Faker("sentence")
+    creator = SubFactory(UserFactory)
+    post = SubFactory(PostFactory)

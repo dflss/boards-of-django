@@ -8,12 +8,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from authentication.models import User
-from boards.models import Board
-from boards.selectors import board_get, board_list, post_get, post_list
+from boards.models import Board, Comment, Post
+from boards.selectors import board_get, board_list, comment_get, comment_list, post_get, post_list
 from boards.services import (
     add_admin_to_board,
     add_member_to_board,
     create_board,
+    create_comment,
     create_post,
     delete_post,
     update_post,
@@ -303,3 +304,106 @@ class DetailPostsApi(APIView):
         delete_post(post=post, user=request.user)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentsApi(APIView):
+    """Manage comments."""
+
+    permission_classes = (IsAuthenticated,)
+
+    class InputSerializer(serializers.Serializer[Any]):
+        text = serializers.CharField(required=True)
+        post = serializers.PrimaryKeyRelatedField(required=True, queryset=Post.objects.all())
+        # Mypy errors are ignored here because base class Field also has a field called parent
+        parent = serializers.PrimaryKeyRelatedField(required=False, queryset=Comment.objects.all())  # type:ignore
+
+    @swagger_auto_schema(  # type: ignore
+        request_body=InputSerializer,
+        responses={
+            201: openapi.Response(description="comment was successfully created"),
+            400: openapi.Response(description="input validation failed"),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        """
+        Create a new comment.
+
+        The user must be a board member.
+        Input is considered valid when the comment is at least 1 and at maximum 1000 characters long.
+        """
+        serializer = self.InputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        create_comment(**serializer.validated_data, creator=request.user)
+
+        return Response(status=status.HTTP_201_CREATED)
+
+    class Pagination(LimitOffsetPagination):
+        default_limit = 10
+
+    class FilterSerializer(serializers.Serializer[Any]):
+        text = serializers.CharField(required=False)
+        post = serializers.PrimaryKeyRelatedField(required=False, queryset=Post.objects.all())
+        # Mypy errors are ignored here because base class Field also has a field called parent
+        parent = serializers.PrimaryKeyRelatedField(required=False, queryset=Comment.objects.all())  # type:ignore
+
+    class OutputSerializer(serializers.Serializer[Any]):
+        text = serializers.CharField(required=True)
+        creator = inline_serializer(
+            fields={
+                "id": serializers.IntegerField(),
+                "username": serializers.CharField(),
+            },
+        )
+        parent_id = serializers.IntegerField()
+
+    @swagger_auto_schema(  # type: ignore
+        responses={200: OutputSerializer(many=True)},
+        query_serializer=FilterSerializer(),
+    )
+    def get(self, request: Request) -> Response:
+        """Retrieve list of comments."""
+        filters_serializer = self.FilterSerializer(data=request.query_params)
+        filters_serializer.is_valid(raise_exception=True)
+
+        comments = comment_list(**filters_serializer.validated_data, user=request.user)
+
+        return get_paginated_response(
+            pagination_class=self.Pagination,
+            serializer_class=self.OutputSerializer,
+            queryset=comments,
+            request=request,
+            view=self,
+        )
+
+
+class DetailCommentsApi(APIView):
+    """Manage comment details."""
+
+    permission_classes = (IsAuthenticated,)
+
+    class OutputSerializer(serializers.Serializer[Any]):
+        text = serializers.CharField(required=True)
+        creator = inline_serializer(
+            fields={
+                "id": serializers.IntegerField(),
+                "username": serializers.CharField(),
+            },
+        )
+        parent_id = serializers.IntegerField()
+
+    @swagger_auto_schema(  # type: ignore
+        responses={
+            200: OutputSerializer(),
+            404: openapi.Response(description="comment does not exist"),
+        }
+    )
+    def get(self, request: Request, comment_id: int) -> Response:
+        """Retrieve comment details."""
+        comment = comment_get(comment_id=comment_id)
+        if comment is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        data = self.OutputSerializer(comment).data
+
+        return Response(data=data, status=status.HTTP_200_OK)
