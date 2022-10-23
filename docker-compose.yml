@@ -43,6 +43,29 @@ services:
       - django
     networks:
       - django
+  redis:
+    image: redis:alpine
+    networks:
+      - django
+  celery:
+    restart: always
+    build:
+      context: ./docker/django
+      dockerfile: Dockerfile
+    command: celery -A tasks worker -l info
+    volumes:
+      - ".:/usr/src/app"
+    env_file:
+     - .env
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+    depends_on:
+      - db
+      - redis
+      - django
+    networks:
+      - django
 
 volumes:
   postgres_data:

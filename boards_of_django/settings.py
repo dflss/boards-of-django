@@ -37,6 +37,7 @@ LOCAL_APPS = [
     "authentication.apps.AuthenticationConfig",
     "boards.apps.BoardsConfig",
     "common.apps.CommonConfig",
+    "tasks.apps.TasksConfig",
 ]
 
 THIRD_PARTY_APPS = [
@@ -166,3 +167,7 @@ SWAGGER_SETTINGS = {
         "drf_yasg.inspectors.StringDefaultFieldInspector",
     ],
 }
+
+
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://redis:6379")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://redis:6379")
