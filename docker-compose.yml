@@ -56,7 +56,10 @@ services:
     volumes:
       - ".:/usr/src/app"
     env_file:
-     - ./.env
+     - .env
+    environment:
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
     depends_on:
       - db
       - redis
