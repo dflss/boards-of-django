@@ -72,11 +72,7 @@ class BoardsApi(APIView):
         filters_serializer = self.FilterSerializer(data=request.query_params)
         filters_serializer.is_valid(raise_exception=True)
 
-        print(request.query_params)
-
         boards = board_list(**filters_serializer.validated_data, user=request.user)
-
-        print(boards)
 
         return get_paginated_response(
             pagination_class=self.Pagination,
