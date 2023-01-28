@@ -60,8 +60,8 @@ class BoardsApi(APIView):
 
     class FilterSerializer(serializers.Serializer[Any]):
         name = serializers.CharField(required=False)
-        is_member = serializers.BooleanField(required=False)
-        is_admin = serializers.BooleanField(required=False)
+        is_member = serializers.BooleanField(required=False, allow_null=True, default=None)
+        is_admin = serializers.BooleanField(required=False, allow_null=True, default=None)
 
     class OutputSerializer(serializers.Serializer[Any]):
         name = serializers.CharField()
@@ -72,7 +72,11 @@ class BoardsApi(APIView):
         filters_serializer = self.FilterSerializer(data=request.query_params)
         filters_serializer.is_valid(raise_exception=True)
 
+        print(request.query_params)
+
         boards = board_list(**filters_serializer.validated_data, user=request.user)
+
+        print(boards)
 
         return get_paginated_response(
             pagination_class=self.Pagination,
