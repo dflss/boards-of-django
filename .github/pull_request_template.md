@@ -15,3 +15,4 @@
 
 ## Screenshots (if appropriate):
 
+Close <!--- Add issue number --->
