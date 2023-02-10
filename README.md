@@ -16,7 +16,13 @@ The aim of the project is to provide an API for a discussion website that is sup
 
 Boards of Django works with [Python 3](https://www.python.org/downloads/), on any platform. It is required to install [docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/).
 
-To get started with Boards of Django, first create .env file. Example file content can be found in .env.example. Then run the following:
+To get started with Boards of Django, first create .env file. Example file content can be found in .env.example:
+
+```
+cp .env.example .env
+```
+
+Then run the following:
 
 ```
 docker-compose up --build
@@ -28,7 +34,7 @@ Then, view the site at [http://localhost/](http://localhost/)
 You can load fixtures to have to initial data to work with:
 
 ```
-docker-compose exec django python manage.py migrate loaddata fixtures.json
+docker-compose exec django python manage.py loaddata fixtures.json
 ```
 
 Each user in the sample fixtures has a password "password".
