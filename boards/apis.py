@@ -60,8 +60,8 @@ class BoardsApi(APIView):
 
     class FilterSerializer(serializers.Serializer[Any]):
         name = serializers.CharField(required=False)
-        is_member = serializers.BooleanField(required=False)
-        is_admin = serializers.BooleanField(required=False)
+        is_member = serializers.BooleanField(required=False, allow_null=True, default=None)
+        is_admin = serializers.BooleanField(required=False, allow_null=True, default=None)
 
     class OutputSerializer(serializers.Serializer[Any]):
         name = serializers.CharField()

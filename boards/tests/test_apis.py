@@ -134,6 +134,7 @@ def test_create_board_name_not_unique(
 def test_get_board_list(api_client_with_credentials: APIClientWithUser) -> None:
     board_1 = BoardFactory()
     board_2 = BoardFactory()
+    board_1.members.add(api_client_with_credentials.user)
 
     response = api_client_with_credentials.get(boards_url())
 
