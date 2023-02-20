@@ -1,7 +1,7 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
-from authentication.models import User
+from authentication.models import ConfirmationToken, User
 
 
 def _validate_user_password(*, password: str, password2: str) -> None:
@@ -24,7 +24,7 @@ def create_user(
     *,
     email: str,
     username: str,
-    is_active: bool = True,
+    is_active: bool = False,
     is_admin: bool = False,
     password: str,
     password2: str,
@@ -56,4 +56,49 @@ def create_user(
         email=email, username=username, is_active=is_active, is_admin=is_admin, password=password
     )
 
+    create_confirmation_token(user=user)
+
     return user
+
+
+def activate_user(*, token: str) -> None:
+    """
+    Activate user's account after a correct confirmation token is provided.
+
+    Parameters
+    ----------
+    token : String value of the token
+
+    Returns
+    -------
+    None
+
+    """
+    confirmation_token = ConfirmationToken.objects.filter(token=token).first()
+
+    if confirmation_token is None:
+        raise ValidationError({"token": "Token is invalid."})
+
+    user = confirmation_token.user
+    user.is_active = True
+    user.save()
+
+
+def create_confirmation_token(*, user: User) -> ConfirmationToken:
+    """
+    Create a new confirmation token instance and save it in database.
+
+    Parameters
+    ----------
+    user : User assigned to the token
+
+    Returns
+    -------
+    Confirmation token
+
+    """
+    confirmation_token = ConfirmationToken(user=user)
+    confirmation_token.full_clean()
+    confirmation_token.save()
+
+    return confirmation_token

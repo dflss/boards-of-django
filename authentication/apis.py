@@ -11,7 +11,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from authentication.services import create_user
+from authentication.services import activate_user, create_user
 
 User = get_user_model()
 
@@ -49,6 +49,29 @@ class UserRegisterApi(APIView):
         create_user(**serializer.validated_data)
 
         return Response(status=status.HTTP_201_CREATED)
+
+
+class UserConfirmRegistrationApi(APIView):
+    """Confirm registration of a user."""
+
+    class InputSerializer(serializers.Serializer[Any]):
+        token = serializers.CharField(required=True)
+
+    @swagger_auto_schema(  # type: ignore
+        request_body=InputSerializer,
+        responses={
+            201: openapi.Response(description="user registration was successfully confirmed"),
+            400: openapi.Response(description="input validation failed"),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        """Confirm registration of a user."""
+        serializer = self.InputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        activate_user(**serializer.validated_data)
+
+        return Response(status=status.HTTP_200_OK)
 
 
 class UserLoginApi(ObtainAuthToken):

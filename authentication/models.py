@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 
@@ -116,3 +118,17 @@ class User(TimestampedModel, AbstractBaseUser, PermissionsMixin):
     def is_staff(self) -> bool:
         """Return True if user is admin."""
         return self.is_admin
+
+
+class ConfirmationToken(models.Model):
+    """
+    Confirmation token used to activate user's account after registration.
+
+    Attributes
+    ----------
+    user : User who registered
+    token : Token value
+    """
+
+    user = models.ForeignKey(User, related_name="confirmation_tokens", on_delete=models.CASCADE)
+    token = models.CharField(max_length=36, default=uuid.uuid4)

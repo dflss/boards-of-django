@@ -3,8 +3,9 @@ from typing import List
 import factory
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
-from factory import Faker, SubFactory
+from factory import Faker, SubFactory, fuzzy
 
+from authentication.models import ConfirmationToken
 from authentication.models import User as UserType
 from boards.models import Board, Comment, Post
 
@@ -18,6 +19,14 @@ class UserFactory(factory.django.DjangoModelFactory):  # type: ignore
     username = factory.Sequence(lambda n: f"user_{n}")
     email = factory.LazyAttribute(lambda n: f"{n.username}@example.com".lower())
     password = factory.LazyFunction(lambda: make_password("password"))
+
+
+class ConfirmationTokenFactory(factory.django.DjangoModelFactory):  # type: ignore
+    class Meta:
+        model = ConfirmationToken
+
+    user = SubFactory(UserFactory)
+    token = fuzzy.FuzzyText()
 
 
 class BoardFactory(factory.django.DjangoModelFactory):  # type: ignore
