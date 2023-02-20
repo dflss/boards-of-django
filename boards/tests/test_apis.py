@@ -113,7 +113,7 @@ def test_create_board_validation_failed(
     response = api_client_with_credentials.post(boards_url(), data)
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == expected_response_json  # type: ignore[attr-defined]
+    assert response.json() == expected_response_json
     assert Board.objects.count() == 0
 
 
@@ -126,7 +126,7 @@ def test_create_board_name_not_unique(
     response = api_client_with_credentials.post(boards_url(), {"name": "Test"})
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == {"name": ["Board with this Name already exists."]}  # type: ignore[attr-defined]
+    assert response.json() == {"name": ["Board with this Name already exists."]}
     assert Board.objects.count() == 1
 
 
@@ -274,7 +274,7 @@ def test_add_admin_who_is_not_a_member_to_board(api_client_with_credentials: API
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == {"users_to_add": ["Only board members can be added as board admins."]}  # type: ignore
+    assert response.json() == {"users_to_add": ["Only board members can be added as board admins."]}
 
 
 @pytest.mark.django_db
@@ -287,7 +287,7 @@ def test_add_admin_by_user_that_is_not_an_admin(api_client_with_credentials: API
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {"detail": "Only board admin can perform this action."}  # type: ignore
+    assert response.json() == {"detail": "Only board admin can perform this action."}
 
 
 @pytest.mark.django_db
@@ -342,7 +342,7 @@ def test_create_post_validation_failed(
     response = api_client_with_credentials.post(posts_url(), {"text": text, "board": board.id})
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == expected_response_json  # type: ignore[attr-defined]
+    assert response.json() == expected_response_json
     assert Post.objects.count() == 0
 
 
@@ -353,9 +353,7 @@ def test_cannot_create_post_if_not_a_board_member(api_client_with_credentials: A
     response = api_client_with_credentials.post(posts_url(), {"text": "test test test", "board": board.id})
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == {  # type: ignore
-        "board": ["Only board members can add posts. You are not a member of this board."]
-    }
+    assert response.json() == {"board": ["Only board members can add posts. You are not a member of this board."]}
 
 
 @pytest.mark.django_db
@@ -509,7 +507,7 @@ def test_update_post_validation_failed(
     post.refresh_from_db()
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == expected_response_json  # type: ignore[attr-defined]
+    assert response.json() == expected_response_json
     assert post.text == "old post content"
 
 
@@ -520,9 +518,7 @@ def test_update_post_by_non_creator(api_client_with_credentials: APIClientWithUs
     response = api_client_with_credentials.patch(posts_detail_url(post_id=post.pk), data={"text": "new post content"})
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
-    assert response.json() == {  # type: ignore[attr-defined]
-        "detail": "Only post creators can edit posts. You are not a creator of this post."
-    }
+    assert response.json() == {"detail": "Only post creators can edit posts. You are not a creator of this post."}
 
 
 @pytest.mark.django_db
@@ -660,7 +656,7 @@ def test_create_comment_validation_failed(
     response = api_client_with_credentials.post(comments_url(), {"text": text, "post": post.id})
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == expected_response_json  # type: ignore[attr-defined]
+    assert response.json() == expected_response_json
     assert Comment.objects.count() == 0
 
 
@@ -671,9 +667,7 @@ def test_cannot_create_comment_if_not_a_board_member(api_client_with_credentials
     response = api_client_with_credentials.post(comments_url(), {"text": "test test test", "post": post.id})
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == {  # type: ignore
-        "board": ["Only board members can add comments. You are not a member of this board."]
-    }
+    assert response.json() == {"board": ["Only board members can add comments. You are not a member of this board."]}
 
 
 @pytest.mark.django_db
@@ -689,7 +683,7 @@ def test_cannot_create_comment_if_parent_does_not_belong_to_post_given(
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == {"parent": ["The parent comment does not belong to the post specified."]}  # type: ignore
+    assert response.json() == {"parent": ["The parent comment does not belong to the post specified."]}
 
 
 @pytest.mark.django_db
