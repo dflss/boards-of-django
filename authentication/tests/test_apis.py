@@ -139,7 +139,7 @@ def test_register_validation_failed(
 
     assert response.status_code == expected_status_code
     # mypy ignored because of https://github.com/typeddjango/djangorestframework-stubs/issues/230
-    assert response.json() == expected_response_json  # type: ignore[attr-defined]
+    assert response.json() == expected_response_json
     assert User.objects.count() == expected_user_count
 
 
@@ -182,7 +182,7 @@ def test_register_user_not_unique(
     response = api_client.post(register_url, request_data)
 
     assert response.status_code == expected_status_code
-    assert response.json() == expected_response_json  # type: ignore[attr-defined]
+    assert response.json() == expected_response_json
     assert User.objects.count() == expected_user_count
 
 
@@ -212,12 +212,10 @@ def test_login(
     assert response.status_code == expected_status_code
 
     if expected_status_code == status.HTTP_200_OK:
-        assert "token" in response.json()  # type: ignore[attr-defined]
+        assert "token" in response.json()
         assert Token.objects.count() == 1
     else:
-        assert response.json() == {  # type: ignore[attr-defined]
-            "non_field_errors": ["Unable to log in with provided credentials."]
-        }
+        assert response.json() == {"non_field_errors": ["Unable to log in with provided credentials."]}
 
 
 @pytest.mark.django_db
@@ -228,7 +226,7 @@ def test_logout_success(
 
     response_login = api_client.post(login_url, {"username": "test", "password": "password"})
 
-    token = response_login.json()["token"]  # type: ignore[attr-defined]
+    token = response_login.json()["token"]
     api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
     response = api_client.post(logout_url)
 
