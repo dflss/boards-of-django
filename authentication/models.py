@@ -1,7 +1,6 @@
-import uuid
-
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from shortuuid.django_fields import ShortUUIDField
 
 from common.models import TimestampedModel
 
@@ -120,15 +119,18 @@ class User(TimestampedModel, AbstractBaseUser, PermissionsMixin):
         return self.is_admin
 
 
-class ConfirmationToken(models.Model):
+class ConfirmationOTP(TimestampedModel):
     """
-    Confirmation token used to activate user's account after registration.
+    Confirmation one-time password used to activate user's account after registration.
 
     Attributes
     ----------
     user : User who registered
-    token : Token value
+    otp : One time password used to verify email address
     """
 
-    user = models.ForeignKey(User, related_name="confirmation_tokens", on_delete=models.CASCADE)
-    token = models.CharField(max_length=36, default=uuid.uuid4)
+    user = models.OneToOneField(User, related_name="confirmation_otps", on_delete=models.CASCADE)
+    otp = ShortUUIDField(
+        length=4,  # type: ignore
+        alphabet="0123456789",  # type: ignore
+    )

@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from factory import Faker, SubFactory, fuzzy
 
-from authentication.models import ConfirmationToken
+from authentication.models import ConfirmationOTP
 from authentication.models import User as UserType
 from boards.models import Board, Comment, Post
 
@@ -21,12 +21,12 @@ class UserFactory(factory.django.DjangoModelFactory):  # type: ignore
     password = factory.LazyFunction(lambda: make_password("password"))
 
 
-class ConfirmationTokenFactory(factory.django.DjangoModelFactory):  # type: ignore
+class ConfirmationOTPFactory(factory.django.DjangoModelFactory):  # type: ignore
     class Meta:
-        model = ConfirmationToken
+        model = ConfirmationOTP
 
     user = SubFactory(UserFactory)
-    token = fuzzy.FuzzyText()
+    otp = fuzzy.FuzzyInteger(low=1000, high=9999)
 
 
 class BoardFactory(factory.django.DjangoModelFactory):  # type: ignore

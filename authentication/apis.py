@@ -11,7 +11,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from authentication.services import activate_user, create_user
+from authentication.services import activate_user, create_user, resend_confirmation_email
 
 User = get_user_model()
 
@@ -55,7 +55,8 @@ class UserConfirmRegistrationApi(APIView):
     """Confirm registration of a user."""
 
     class InputSerializer(serializers.Serializer[Any]):
-        token = serializers.CharField(required=True)
+        email = serializers.EmailField(required=True)
+        otp = serializers.CharField(required=True)
 
     @swagger_auto_schema(  # type: ignore
         request_body=InputSerializer,
@@ -70,6 +71,29 @@ class UserConfirmRegistrationApi(APIView):
         serializer.is_valid(raise_exception=True)
 
         activate_user(**serializer.validated_data)
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class UserResendConfirmationOTPApi(APIView):
+    """Resend confirmation email."""
+
+    class InputSerializer(serializers.Serializer[Any]):
+        email = serializers.EmailField(required=True)
+
+    @swagger_auto_schema(  # type: ignore
+        request_body=InputSerializer,
+        responses={
+            201: openapi.Response(description="confirmation email was was successfully resent"),
+            400: openapi.Response(description="input validation failed"),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        """Resend confirmation email."""
+        serializer = self.InputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        resend_confirmation_email(**serializer.validated_data)
 
         return Response(status=status.HTTP_200_OK)
 

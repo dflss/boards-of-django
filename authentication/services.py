@@ -1,7 +1,13 @@
+import os
+from datetime import timedelta
+from typing import cast
+
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.utils.timezone import now
 
-from authentication.models import ConfirmationToken, User
+from authentication.models import ConfirmationOTP, User
+from tasks.celery import task_send_confirmation_email
 
 
 def _validate_user_password(*, password: str, password2: str) -> None:
@@ -18,6 +24,14 @@ def _validate_user_username(*, username: str) -> None:
         raise ValidationError({"username": "Username cannot be shorter than 3 characters."})
     if len(username) > 20:
         raise ValidationError({"username": "Username cannot be longer than 20 characters."})
+
+
+def _create_confirmation_otp_and_send_email(user: User) -> None:
+    confirmation_otp = ConfirmationOTP(user=user)
+    confirmation_otp.full_clean()
+    confirmation_otp.save()
+
+    task_send_confirmation_email(user, confirmation_otp)
 
 
 def create_user(
@@ -56,49 +70,53 @@ def create_user(
         email=email, username=username, is_active=is_active, is_admin=is_admin, password=password
     )
 
-    create_confirmation_token(user=user)
+    _create_confirmation_otp_and_send_email(user=user)
 
     return user
 
 
-def activate_user(*, token: str) -> None:
+def activate_user(*, email: str, otp: str) -> None:
     """
-    Activate user's account after a correct confirmation token is provided.
+    Activate user's account after a correct confirmation OTP is provided.
 
     Parameters
     ----------
-    token : String value of the token
+    email: Email address of the user whose account is to be verified
+    otp : One-time password to activate user's account
 
     Returns
     -------
     None
 
     """
-    confirmation_token = ConfirmationToken.objects.filter(token=token).first()
+    user = User.objects.get(email=email)
+    confirmation_otp = ConfirmationOTP.objects.filter(user=user, otp=otp).first()
 
-    if confirmation_token is None:
-        raise ValidationError({"token": "Token is invalid."})
+    if confirmation_otp is None or (
+        confirmation_otp.created_at
+        + timedelta(seconds=cast(int, os.environ.get("CONFIRMATION_OTP_VALID_FOR_SECONDS")))
+        < now()
+    ):
+        raise ValidationError({"otp": "One-time password is invalid."})
 
-    user = confirmation_token.user
     user.is_active = True
     user.save()
 
 
-def create_confirmation_token(*, user: User) -> ConfirmationToken:
+def resend_confirmation_email(email: str) -> None:
     """
-    Create a new confirmation token instance and save it in database.
+    Resend a confirmation email.
 
     Parameters
     ----------
-    user : User assigned to the token
+    email : Email address to resend the email to.
 
     Returns
     -------
-    Confirmation token
+    None
 
     """
-    confirmation_token = ConfirmationToken(user=user)
-    confirmation_token.full_clean()
-    confirmation_token.save()
+    user = User.objects.get(email=email)
+    ConfirmationOTP.objects.filter(user=user).delete()
 
-    return confirmation_token
+    _create_confirmation_otp_and_send_email(user=user)

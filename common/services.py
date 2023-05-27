@@ -49,7 +49,7 @@ def model_update(
             # The type stubs for DateField and TimeField are missing the attributes "auto_now_add" and "auto_now".
             # This also effects DateTimeField, which inherits from DateField.
             # Open issue: https://github.com/typeddjango/django-stubs/issues/479
-            if type(model_field) == DateTimeField and model_field.auto_now is True:  # type: ignore
+            if type(model_field) == DateTimeField and model_field.auto_now is True:
                 fields.append(model_field.name)
         instance.save(update_fields=fields)
 

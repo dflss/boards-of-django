@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from factories import ConfirmationTokenFactory, UserFactory
+from factories import ConfirmationOTPFactory, UserFactory
 
 confirm_registration_url = reverse("authentication:confirm-registration")
 
@@ -11,9 +11,9 @@ confirm_registration_url = reverse("authentication:confirm-registration")
 @pytest.mark.django_db
 def test_confirm_registration_success(api_client: APIClient) -> None:
     user = UserFactory(is_active=False)
-    confirmation_token = ConfirmationTokenFactory(user=user)
+    confirmation_otp = ConfirmationOTPFactory(user=user)
 
-    data = {"token": confirmation_token.token}
+    data = {"email": user.email, "otp": confirmation_otp.otp}
 
     response = api_client.post(confirm_registration_url, data)
 
@@ -24,15 +24,15 @@ def test_confirm_registration_success(api_client: APIClient) -> None:
 
 
 @pytest.mark.django_db
-def test_confirm_registration_invalid_token(api_client: APIClient) -> None:
+def test_confirm_registration_invalid_otp(api_client: APIClient) -> None:
     user = UserFactory(is_active=False)
 
-    data = {"token": "wrong_token"}
+    data = {"email": user.email, "otp": "wrong_otp"}
 
     response = api_client.post(confirm_registration_url, data)
 
     user.refresh_from_db()
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json() == {"token": ["Token is invalid."]}
+    assert response.json() == {"otp": ["One-time password is invalid."]}
     assert not user.is_active

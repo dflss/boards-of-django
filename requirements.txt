@@ -84,6 +84,7 @@ ruamel.yaml==0.17.21
 ruamel.yaml.clib==0.2.6
 simplejson==3.17.6
 six==1.16.0
+shortuuid==1.0.11
 sqlparse==0.4.3
 stack-data==0.5.1
 toml==0.10.2
