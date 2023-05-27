@@ -30,7 +30,7 @@ def task_send_confirmation_email(user: "User", confirmation_otp: "ConfirmationOT
     """
     mail_subject = "Confirm registration"
     message = (
-        f"Hey! You have just registered in Boards of Django. Use this code to confirm your registration: "
+        "Hey! You have just registered in Boards of Django. Use this code to confirm your registration: "
         f"{confirmation_otp.otp}"
     )
     to_email = user.email
