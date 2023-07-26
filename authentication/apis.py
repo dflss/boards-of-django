@@ -84,7 +84,7 @@ class UserResendConfirmationOTPApi(APIView):
     @swagger_auto_schema(  # type: ignore
         request_body=InputSerializer,
         responses={
-            201: openapi.Response(description="confirmation email was was successfully resent"),
+            201: openapi.Response(description="confirmation email was successfully resent"),
             400: openapi.Response(description="input validation failed"),
         },
     )
