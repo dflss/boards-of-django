@@ -1,12 +1,11 @@
-import os
 from datetime import timedelta
-from typing import cast
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
 
 from authentication.models import ConfirmationOTP, User
+from boards_of_django import settings
 from tasks.celery import task_send_confirmation_email
 
 
@@ -53,7 +52,8 @@ def create_user(
     ----------
     email : User's email address
     username : User's username
-    is_active : Indicates if user is active
+    is_active : Indicates if user is active. Initially, when the user is created, this will be set to False. The user
+        becomes active after activating account using OTP sent to email used for registration.
     is_admin : Indicates if user has administrative privileges
     password : User's password
     password2 : Password confirmation
@@ -89,13 +89,14 @@ def activate_user(*, email: str, otp: str) -> None:
     None
 
     """
-    user = User.objects.get(email=email)
+    user = User.objects.filter(email=email).first()
+    if user is None:
+        raise ValidationError({"email": "Email is invalid."})
+
     confirmation_otp = ConfirmationOTP.objects.filter(user=user, otp=otp).first()
 
     if confirmation_otp is None or (
-        confirmation_otp.created_at
-        + timedelta(seconds=cast(int, os.environ.get("CONFIRMATION_OTP_VALID_FOR_SECONDS")))
-        < now()
+        confirmation_otp.created_at + timedelta(seconds=int(settings.CONFIRMATION_OTP_VALID_FOR_SECONDS)) < now()
     ):
         raise ValidationError({"otp": "One-time password is invalid."})
 

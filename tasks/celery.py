@@ -1,3 +1,4 @@
+import os
 from typing import TYPE_CHECKING
 
 from celery import Celery
@@ -8,9 +9,10 @@ from boards_of_django import settings
 if TYPE_CHECKING:
     from authentication.models import ConfirmationOTP, User
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "boards_of_django.settings")
 app = Celery("boards_of_django")
-app.config_from_object("django.conf:settings", namespace="CELERY")
-app.autodiscover_tasks()
+app.config_from_object("boards_of_django:settings", namespace="CELERY")
+app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 
 @app.task
