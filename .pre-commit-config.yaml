@@ -28,6 +28,7 @@ repos:
         - celery
         - celery-stubs
         - shortuuid
+        - pytest_mock
       args: [--strict]
       exclude: '^env/|migrations|.git|.mypy_cache|pytest_cache'
 
