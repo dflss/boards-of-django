@@ -1,0 +1,8 @@
+celery
+Django
+djangorestframework
+drf-yasg
+gunicorn
+psycopg2
+redis
+shortuuid

@@ -1,0 +1,16 @@
+black
+coverage
+django-stubs
+djangorestframework-stubs
+factory-boy
+Faker
+flake8
+isort
+pip-tools
+pre-commit
+pycodestyle
+pytest
+pytest-django
+pytest-factoryboy
+pytest-mock
+PyYAML==5.3.1
