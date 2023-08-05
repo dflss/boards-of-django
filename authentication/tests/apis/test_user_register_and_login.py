@@ -138,7 +138,6 @@ def test_register_validation_failed(
     response = api_client.post(register_url, data)
 
     assert response.status_code == expected_status_code
-    # mypy ignored because of https://github.com/typeddjango/djangorestframework-stubs/issues/230
     assert response.json() == expected_response_json
     assert User.objects.count() == expected_user_count
 

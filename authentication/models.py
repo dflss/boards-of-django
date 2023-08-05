@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from shortuuid.django_fields import ShortUUIDField
 
 from common.models import TimestampedModel
 
@@ -116,3 +117,20 @@ class User(TimestampedModel, AbstractBaseUser, PermissionsMixin):
     def is_staff(self) -> bool:
         """Return True if user is admin."""
         return self.is_admin
+
+
+class ConfirmationOTP(TimestampedModel):
+    """
+    Confirmation one-time password used to activate user's account after registration.
+
+    Attributes
+    ----------
+    user : User who registered
+    otp : One time password used to verify email address
+    """
+
+    user = models.OneToOneField(User, related_name="confirmation_otps", on_delete=models.CASCADE)
+    otp = ShortUUIDField(
+        length=4,  # type: ignore
+        alphabet="0123456789",  # type: ignore
+    )
