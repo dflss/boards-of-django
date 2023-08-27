@@ -10,6 +10,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "boards_of_django.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.django.settings")
 
 application = get_wsgi_application()

@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 from pytest_mock import MockerFixture
 
 from authentication.services import activate_user
-from boards_of_django import settings
+from config.django import settings
 from factories import ConfirmationOTPFactory, UserFactory
 
 

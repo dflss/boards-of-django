@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.timezone import now
 
 from authentication.models import ConfirmationOTP, User
-from boards_of_django import settings
+from config.django import settings
 from tasks.celery import task_send_confirmation_email
 
 

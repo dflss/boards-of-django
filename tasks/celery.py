@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING
 from celery import Celery
 from django.core.mail import send_mail
 
-from boards_of_django import settings
+from config.django import settings
 
 if TYPE_CHECKING:
     from authentication.models import ConfirmationOTP, User
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "boards_of_django.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.django.settings")
 app = Celery("boards_of_django")
-app.config_from_object("boards_of_django:settings", namespace="CELERY")
+app.config_from_object("config.django:settings", namespace="CELERY")
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 

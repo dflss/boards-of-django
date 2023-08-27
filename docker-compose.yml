@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./docker/django/Dockerfile
       target: "base"
-    command: gunicorn boards_of_django.wsgi:application --workers 2 --bind 0.0.0.0:8000 --reload
+    command: gunicorn config.wsgi:application --workers 2 --bind 0.0.0.0:8000 --reload
     env_file:
       - .env
     environment:

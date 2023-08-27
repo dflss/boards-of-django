@@ -27,4 +27,4 @@ COPY . ${DIST_DIR}
 
 RUN python manage.py collectstatic --no-input
 
-CMD ["gunicorn", "boards_of_django.wsgi:application", "--workers", "2", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "config.wsgi:application", "--workers", "2", "--bind", "0.0.0.0:8000"]
