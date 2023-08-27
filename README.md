@@ -5,6 +5,7 @@
 * [Getting started](#getting-started)
 * [Testing](#testing)
 * [Docs](#docs)
+* [Requirements](#requirements)
 * [Styleguide](#styleguide)
 * [How to contribute](#how-to-contribute)
 * [Status](#status)
@@ -49,6 +50,31 @@ docker-compose exec django pytest
 
 After building and running the project locally, the documentation can be found at: [http://localhost/swagger/](http://localhost/swagger/). 
 
+
+## Requirements
+
+All the requirements that are needed by the app should be added to `requirements.in`.
+After updating this file, run 
+
+```commandline
+pip-compile
+```
+
+to regenerate `requirements.txt` with all the sub-dependencies anf pinned versions.
+
+The requirements that are only needed for development purposes (such as testing, linting, etc.)
+should be placed in `dev-requirements.in`. After updating this file, run:
+
+```commandline
+pip-compile dev-requirements.in --output-file=dev-requirements.txt
+```
+
+to regenerate `dev-requirements.txt` file.
+
+Only pin versions in `requirements.in` and `dev-requirements.in` if a specific version
+needs to be used (for example, due to a bug in this library).
+
+You can read more about requirements management with pip tools [here](https://github.com/jazzband/pip-tools#pip-tools--pip-compile--pip-sync).
 
 ## Styleguide
 

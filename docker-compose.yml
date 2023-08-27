@@ -3,11 +3,12 @@ version: '3.10'
 services:
   django:
     build:
-      context: ./docker/django
-      dockerfile: Dockerfile
-    command: gunicorn boards_of_django.wsgi:application -w 2 -b :8000 --reload
+      context: .
+      dockerfile: ./docker/django/Dockerfile
+      target: "base"
+    command: gunicorn boards_of_django.wsgi:application --workers 2 --bind 0.0.0.0:8000 --reload
     env_file:
-      - ./.env
+      - .env
     environment:
       - DEBUG=${DEBUG}
       - SECRET_KEY=${SECRET_KEY}
@@ -15,7 +16,8 @@ services:
     volumes:
       - ".:/usr/src/app"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - django
   db:
@@ -30,17 +32,26 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PORT=${POSTGRES_PORT}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
     networks:
       - django
   nginx:
     build: ./docker/nginx
     ports:
-      - 80:80
+      - "80:80"
     volumes:
       - "./static:/usr/src/static"
       - "./media:/usr/src/media"
     depends_on:
-      - django
+      django:
+        condition: service_started
     networks:
       - django
   redis:
@@ -50,8 +61,8 @@ services:
   celery:
     restart: always
     build:
-      context: ./docker/django
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./docker/django/Dockerfile
     command: celery -A tasks worker -l info
     volumes:
       - ".:/usr/src/app"
@@ -61,9 +72,12 @@ services:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
     depends_on:
-      - db
-      - redis
-      - django
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      django:
+        condition: service_started
     networks:
       - django
 
