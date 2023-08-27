@@ -5,6 +5,7 @@ djangorestframework-stubs
 factory-boy
 Faker
 flake8
+Flake8-pyproject
 isort
 pip-tools
 pre-commit

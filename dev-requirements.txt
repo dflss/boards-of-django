@@ -49,6 +49,10 @@ faker==19.2.0
 filelock==3.12.2
     # via virtualenv
 flake8==6.1.0
+    # via
+    #   -r dev-requirements.in
+    #   flake8-pyproject
+flake8-pyproject==1.2.3
     # via -r dev-requirements.in
 identify==2.5.26
     # via pre-commit
@@ -126,6 +130,7 @@ tomli==2.0.1
     #   black
     #   build
     #   django-stubs
+    #   flake8-pyproject
     #   mypy
     #   pip-tools
     #   pyproject-hooks
