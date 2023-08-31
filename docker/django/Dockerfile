@@ -1,5 +1,5 @@
 # Base image contains the dependencies and no application code
-FROM python:3.10-alpine as base
+FROM python:3.11-alpine as base
 
 ENV DIST_DIR /usr/src/app
 ENV PYTHONDONTWRITEBYTECODE 1
