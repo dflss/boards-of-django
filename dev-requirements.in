@@ -1,5 +1,4 @@
 black
-coverage
 django-stubs
 djangorestframework-stubs
 factory-boy
@@ -10,6 +9,7 @@ flake8-type-checking
 pip-tools
 pre-commit
 pytest
+pytest-cov
 pytest-django
 pytest-factoryboy
 pytest-mock
