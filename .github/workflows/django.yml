@@ -12,7 +12,7 @@ jobs:
     - name: Type check
       run: docker-compose run django mypy --config pyproject.toml boards_of_django/
     - name: Run flake8
-      run: docker-compose run django flake8
+      run: docker-compose run django flake8 --select=TC
     - name: Run ruff
       run: docker-compose run django ruff check .
     - name: Run migrations
