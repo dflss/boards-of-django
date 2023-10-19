@@ -45,7 +45,7 @@ repos:
   hooks:
     - id: pytest
       name: pytest
-      entry: pytest --cov --cov-report html
+      entry: docker-compose run --rm -T django pytest --cov-fail-under=95
       language: system
       pass_filenames: false
       always_run: true
