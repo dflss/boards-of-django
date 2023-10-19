@@ -1,21 +1,23 @@
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING
 
 import pytest
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.test import APIClient
 
 from boards_of_django.authentication.models import User
 from factories import UserFactory
+
+if TYPE_CHECKING:
+    from rest_framework.test import APIClient
 
 register_url = reverse("authentication:register")
 login_url = reverse("authentication:login")
 logout_url = reverse("authentication:logout")
 
 
-@pytest.mark.django_db
-def test_register_success(api_client: APIClient) -> None:
+@pytest.mark.django_db()
+def test_register_success(api_client: "APIClient") -> None:
     assert User.objects.count() == 0
 
     data = {
@@ -31,9 +33,9 @@ def test_register_success(api_client: APIClient) -> None:
     assert User.objects.count() == 1
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
-    "data, expected_status_code, expected_response_json, expected_user_count",
+    ("data", "expected_status_code", "expected_response_json", "expected_user_count"),
     [
         (
             {
@@ -127,10 +129,10 @@ def test_register_success(api_client: APIClient) -> None:
     ],
 )
 def test_register_validation_failed(
-    api_client: APIClient,
-    data: Dict[str, str],
+    api_client: "APIClient",
+    data: dict[str, str],
     expected_status_code: int,
-    expected_response_json: Dict[str, List[str]],
+    expected_response_json: dict[str, list[str]],
     expected_user_count: int,
 ) -> None:
     assert User.objects.count() == expected_user_count
@@ -142,9 +144,9 @@ def test_register_validation_failed(
     assert User.objects.count() == expected_user_count
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
-    "existent_user_data, expected_status_code, expected_response_json, expected_user_count",
+    ("existent_user_data", "expected_status_code", "expected_response_json", "expected_user_count"),
     [
         (
             {"email": "test@example.com"},
@@ -161,10 +163,10 @@ def test_register_validation_failed(
     ],
 )
 def test_register_user_not_unique(
-    api_client: APIClient,
-    existent_user_data: Dict[str, str],
+    api_client: "APIClient",
+    existent_user_data: dict[str, str],
     expected_status_code: int,
-    expected_response_json: Dict[str, List[str]],
+    expected_response_json: dict[str, list[str]],
     expected_user_count: int,
 ) -> None:
     UserFactory(**existent_user_data)
@@ -185,9 +187,9 @@ def test_register_user_not_unique(
     assert User.objects.count() == expected_user_count
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
-    "user_data, expected_status_code",
+    ("user_data", "expected_status_code"),
     [
         (
             {"username": "test", "password": "password"},
@@ -200,8 +202,8 @@ def test_register_user_not_unique(
     ],
 )
 def test_login(
-    api_client: APIClient,
-    user_data: Dict[str, str],
+    api_client: "APIClient",
+    user_data: dict[str, str],
     expected_status_code: int,
 ) -> None:
     UserFactory(username="test")
@@ -217,9 +219,9 @@ def test_login(
         assert response.json() == {"non_field_errors": ["Unable to log in with provided credentials."]}
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_logout_success(
-    api_client: APIClient,
+    api_client: "APIClient",
 ) -> None:
     UserFactory(username="test")
 
@@ -233,7 +235,7 @@ def test_logout_success(
     assert Token.objects.count() == 0
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
     "token",
     [
@@ -242,8 +244,8 @@ def test_logout_success(
     ],
 )
 def test_logout_invalid_token(
-    api_client: APIClient,
-    token: Optional[str],
+    api_client: "APIClient",
+    token: str | None,
 ) -> None:
     if token is not None:
         api_client.credentials(HTTP_AUTHORIZATION=f"Token {token}")

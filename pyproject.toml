@@ -1,23 +1,155 @@
-[tool.isort]
-line_length = 119
-profile = "black"
-skip = [".gitignore"]
-skip_glob = ["env/*", "*/migrations/*"]
+[project]
+name = "Boards of Django"
+requires-python = ">=3.10"
+
+[tool.ruff]
+select = [
+    "F", "E", "W", "I", "N", "D",
+    "UP", "YTT", "ANN", "S", "BLE",
+    "FBT", "B", "A", "C4", "DTZ",
+    "T10", "EXE", "ISC", "ICN",
+    "G", "PIE", "PT", "Q", "RSE",
+    "RET", "SIM", "TID", "ARG",
+    "PGH", "PL", "TRY", "RUF",
+]
+ignore = [
+    "D104", # Missing docstring in public package
+    "D100", # Missing docstring in public module
+    "ANN101", # Missing type annotation for function argument 'self'
+    "TRY003" # Avoid specifying long messages outside the exception class
+]
+unfixable = []
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "*/migrations/*",
+]
+line-length = 119
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$|mock|fake|dummy|stub"
+target-version = "py310"
+
+[tool.ruff.per-file-ignores]
+"*/tests/*" = [
+    "D", # pydocstyle
+    "S101", # Use of `assert` detected
+    "S106", # Possible hardcoded password assigned to argument
+    "PLR2004", # Magic value used in comparison
+]
+"config/django/*" = [
+    "F405", # `env` may be undefined, or defined from star imports
+    "PGH004", # Use specific rule codes when using `noqa`
+]
+"*/apps.py" = [
+    "D", # pydocstyle
+]
+"*/models.py" = [
+    "D106", # Missing docstring in public nested class
+]
+"*/apis.py" = [
+    "D106", # Missing docstring in public nested class
+]
+"factories.py" = [
+    "D", # pydocstyle
+    "FBT001", # Boolean-typed positional argument in function definition
+]
+
+[tool.ruff.mccabe]
+max-complexity = 10
+
+[tool.ruff.pydocstyle]
+convention = "google"
 
 [tool.black]
 line-length = 119
 include = '\.pyi?$'
-exclude = '(/(\.git|\.mypy_cache|\.pytest_cache|env)/|^migrations/)'
+force-exclude = '(/(\.git|\.mypy_cache|\.pytest_cache|env)/|^.*\b(migrations)\b.*$)'
 
+# Using flake8 for TC rules only, because rules TC1/TC2 are not yet implemented in ruff
+# (only rules TC001 - TC005 are available).
 [tool.flake8]
 max-line-length = 119
+type-checking-exempt-modules = "typing"
+pytest-parametrize-names-type = "csv"
+extend-select = ["TC", "TC2"]
+type-checking-strict = true
 exclude = [".git", ".mypy_cache", ".pytest_cache", "env", "*migrations*", "manage.py"]
 
-[tool.tryceratops]
-exclude = ["manage.py"]
-ignore = ["TC003"]
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 
-[tool.pydocstyle]
-inherit = false
-convention = "pep257"
-add-ignore = ["D100", "D105", "D104", "D106"]
+[tool.django-stubs]
+django_settings_module = "config.django.base"
+
+[[tool.mypy.overrides]]
+module = [
+    "manage.*",
+    "config.django.base.*",
+    "boards_of_django.*.migrations.*",
+]
+# Ignore Django manage.py
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "environ",
+    "factory",
+    "drf_yasg.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.django.base"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = [
+    "--cov-report=term-missing",
+]
+
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "conftest.py",
+    "*/migrations/*",
+    "config/*",
+    "manage.py",
+    "*/apps.py"
+]
+source = ["."]
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.coverage.report]
+exclude_lines = [
+    "if TYPE_CHECKING:",
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:"
+]

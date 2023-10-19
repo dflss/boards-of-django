@@ -1,15 +1,19 @@
+from typing import TYPE_CHECKING
+
 import pytest
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient
+
+if TYPE_CHECKING:
+    from rest_framework.test import APIClient
 
 from factories import ConfirmationOTPFactory, UserFactory
 
 confirm_registration_url = reverse("authentication:confirm-registration")
 
 
-@pytest.mark.django_db
-def test_confirm_registration_success(api_client: APIClient) -> None:
+@pytest.mark.django_db()
+def test_confirm_registration_success(api_client: "APIClient") -> None:
     user = UserFactory(is_active=False)
     confirmation_otp = ConfirmationOTPFactory(user=user)
     data = {"email": user.email, "otp": confirmation_otp.otp}
@@ -19,8 +23,8 @@ def test_confirm_registration_success(api_client: APIClient) -> None:
     assert response.status_code == status.HTTP_200_OK
 
 
-@pytest.mark.django_db
-def test_confirm_registration_invalid_email(api_client: APIClient) -> None:
+@pytest.mark.django_db()
+def test_confirm_registration_invalid_email(api_client: "APIClient") -> None:
     data = {"email": "wrong@example.com", "otp": "wrong_otp"}
 
     response = api_client.post(confirm_registration_url, data)
@@ -29,8 +33,8 @@ def test_confirm_registration_invalid_email(api_client: APIClient) -> None:
     assert response.json() == {"email": ["Email is invalid."]}
 
 
-@pytest.mark.django_db
-def test_confirm_registration_invalid_otp(api_client: APIClient) -> None:
+@pytest.mark.django_db()
+def test_confirm_registration_invalid_otp(api_client: "APIClient") -> None:
     user = UserFactory(is_active=False)
     data = {"email": user.email, "otp": "wrong_otp"}
 

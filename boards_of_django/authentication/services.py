@@ -19,9 +19,9 @@ def _validate_user_password(*, password: str, password2: str) -> None:
 
 
 def _validate_user_username(*, username: str) -> None:
-    if len(username) < 3:
+    if len(username) < 3:  # noqa: PLR2004
         raise ValidationError({"username": "Username cannot be shorter than 3 characters."})
-    if len(username) > 20:
+    if len(username) > 20:  # noqa: PLR2004
         raise ValidationError({"username": "Username cannot be longer than 20 characters."})
 
 
@@ -33,7 +33,7 @@ def _create_confirmation_otp_and_send_email(user: User) -> None:
     task_send_confirmation_email(user, confirmation_otp)
 
 
-def create_user(
+def create_user(  # noqa: PLR0913
     *,
     email: str,
     username: str,
@@ -42,8 +42,7 @@ def create_user(
     password: str,
     password2: str,
 ) -> User:
-    """
-    Create a new user instance and save it in database.
+    """Create a new user instance and save it in database.
 
     Before creation, password and username will be validated.
     Passwords must match and pass the default Django password validation. Username must contain 3-20 characters.
@@ -58,7 +57,7 @@ def create_user(
     password : User's password
     password2 : Password confirmation
 
-    Returns
+    Returns:
     -------
     User
 
@@ -76,15 +75,14 @@ def create_user(
 
 
 def activate_user(*, email: str, otp: str) -> None:
-    """
-    Activate user's account after a correct confirmation OTP is provided.
+    """Activate user's account after a correct confirmation OTP is provided.
 
     Parameters
     ----------
     email: Email address of the user whose account is to be verified
     otp : One-time password to activate user's account
 
-    Returns
+    Returns:
     -------
     None
 
@@ -105,14 +103,13 @@ def activate_user(*, email: str, otp: str) -> None:
 
 
 def resend_confirmation_email(email: str) -> None:
-    """
-    Resend a confirmation email.
+    """Resend a confirmation email.
 
     Parameters
     ----------
     email : Email address to resend the email to.
 
-    Returns
+    Returns:
     -------
     None
 

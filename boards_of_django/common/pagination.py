@@ -1,25 +1,26 @@
 from collections import OrderedDict
-from typing import Any, List, Type
+from typing import TYPE_CHECKING, Any
 
-from django.db.models import QuerySet
-from rest_framework.pagination import BasePagination
 from rest_framework.pagination import LimitOffsetPagination as _LimitOffsetPagination
-from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.serializers import Serializer
-from rest_framework.views import APIView
+
+if TYPE_CHECKING:
+    from django.db.models.query import QuerySet
+    from rest_framework.pagination import BasePagination
+    from rest_framework.request import Request
+    from rest_framework.serializers import Serializer
+    from rest_framework.views import APIView
 
 
 def get_paginated_response(
     *,
-    pagination_class: Type[BasePagination],
-    serializer_class: Type[Serializer[Any]],
-    queryset: QuerySet[Any],
-    request: Request,
-    view: APIView
+    pagination_class: type["BasePagination"],
+    serializer_class: type["Serializer[Any]"],
+    queryset: "QuerySet[Any]",
+    request: "Request",
+    view: "APIView",
 ) -> Response:
-    """
-    Return a paginated response.
+    """Return a paginated response.
 
     This code is taken from Django-Styleguide: https://github.com/HackSoftware/Django-Styleguide#filters--pagination
     """
@@ -37,8 +38,7 @@ def get_paginated_response(
 
 
 class LimitOffsetPagination(_LimitOffsetPagination):
-    """
-    Base class for Pagination classes used in APIs.
+    """Base class for Pagination classes used in APIs.
 
     This code is taken from Django-Styleguide: https://github.com/HackSoftware/Django-Styleguide#filters--pagination
     """
@@ -46,9 +46,8 @@ class LimitOffsetPagination(_LimitOffsetPagination):
     default_limit = 10
     max_limit = 50
 
-    def get_paginated_response(self, data: List[Any]) -> Response:
-        """
-        Return paginated response.
+    def get_paginated_response(self, data: list[Any]) -> Response:
+        """Return paginated response.
 
         We redefine this method in order to return `limit` and `offset`.
         This is used by the frontend to construct the pagination itself.

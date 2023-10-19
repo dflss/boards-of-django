@@ -1,21 +1,24 @@
 import re
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 import pytest
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from pytest_mock import MockerFixture
 
 from boards_of_django.authentication.services import activate_user
 from factories import ConfirmationOTPFactory, UserFactory
 
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
 
-@pytest.mark.django_db
+
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
     "is_active",
     [True, False],
 )
-def test_user_is_active_after_activation(is_active: bool) -> None:
+def test_user_is_active_after_activation(*, is_active: bool) -> None:
     user = UserFactory(is_active=is_active)
     confirmation_otp = ConfirmationOTPFactory(user=user)
 
@@ -26,7 +29,7 @@ def test_user_is_active_after_activation(is_active: bool) -> None:
     assert user.is_active
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_raise_exception_if_user_does_not_exist() -> None:
     confirmation_otp = ConfirmationOTPFactory()
 
@@ -34,7 +37,7 @@ def test_raise_exception_if_user_does_not_exist() -> None:
         activate_user(email="wrong@example.com", otp=confirmation_otp.otp)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_raise_exception_if_otp_is_invalid() -> None:
     user = UserFactory(is_active=False)
     confirmation_otp = ConfirmationOTPFactory()
@@ -47,8 +50,8 @@ def test_raise_exception_if_otp_is_invalid() -> None:
     assert not user.is_active
 
 
-@pytest.mark.django_db
-def test_raise_exception_if_otp_is_expired(mocker: MockerFixture) -> None:
+@pytest.mark.django_db()
+def test_raise_exception_if_otp_is_expired(mocker: "MockerFixture") -> None:
     user = UserFactory(is_active=False)
     confirmation_otp = ConfirmationOTPFactory(user=user)
     mocker.patch(

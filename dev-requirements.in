@@ -6,12 +6,12 @@ factory-boy
 Faker
 flake8
 Flake8-pyproject
-isort
+flake8-type-checking
 pip-tools
 pre-commit
-pycodestyle
 pytest
 pytest-django
 pytest-factoryboy
 pytest-mock
 PyYAML==5.3.1
+ruff

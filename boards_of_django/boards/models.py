@@ -17,13 +17,12 @@ def _validate_contains_allowed_characters(name: str) -> None:
 
 
 class Board(TimestampedModel):
-    """
-    Board model.
+    """Board model.
 
     Board represents a board with a certain topic. Users can join a board to become members. They can also add posts
     and comments to the board.
 
-    Attributes
+    Attributes:
     ----------
     name : Board's name
     members : Users that are members of the board
@@ -33,17 +32,16 @@ class Board(TimestampedModel):
     name = models.CharField(
         unique=True, max_length=20, validators=[MinLengthValidator(3), _validate_contains_allowed_characters]
     )
-    members = models.ManyToManyField(User, related_name="members")  # type: ignore
-    admins = models.ManyToManyField(User, related_name="admins")  # type: ignore
+    members = models.ManyToManyField(User, related_name="members")  # type: ignore[var-annotated]
+    admins = models.ManyToManyField(User, related_name="admins")  # type: ignore[var-annotated]
 
 
 class Post(TimestampedModel):
-    """
-    Post model.
+    """Post model.
 
     Posts are added to the board. Only board members can add new posts. All users can view all posts.
 
-    Attributes
+    Attributes:
     ----------
     text : The post's content
     creator : User that created the post
@@ -58,12 +56,11 @@ class Post(TimestampedModel):
 
 
 class Comment(TimestampedModel):
-    """
-    Comments are added to posts.
+    """Comments are added to posts.
 
     Only board members can add new comments. All users can view all comments.
 
-    Attributes
+    Attributes:
     ----------
     text : The comment's content
     creator : User that created the comment

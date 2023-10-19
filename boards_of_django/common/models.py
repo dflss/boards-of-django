@@ -5,7 +5,7 @@ from django.utils import timezone
 class TimestampedModel(models.Model):
     """Base model class that allows to audit the timestamp when the object in database was created and modified.
 
-    Attributes
+    Attributes:
     ----------
     created_at : Timestamp when the object was created
     updated_at : Timestamp when the object last updated

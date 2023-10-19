@@ -1,4 +1,4 @@
-from config.env import env
+# mypy: disable-error-code="name-defined"
 
 from .base import *  # noqa
 

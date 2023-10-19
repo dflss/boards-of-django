@@ -27,15 +27,14 @@ app.autodiscover_tasks()
 
 @app.task
 def task_send_confirmation_email(user: "User", confirmation_otp: "ConfirmationOTP") -> str:
-    """
-    Send a confirmation email after user registers.
+    """Send a confirmation email after user registers.
 
     Parameters
     ----------
     user : User who registered.
     confirmation_otp : One-time password that can be used to confirm registration.
 
-    Returns
+    Returns:
     -------
     "Done" message when success. Otherwise, it fails silently.
 
