@@ -137,6 +137,6 @@ class UserLogoutApi(APIView):
         """Log the user out by invalidating her/his authorization token."""
         user = request.user
         if hasattr(user, "auth_token"):
-            user.auth_token.delete()  # type: ignore[union-attr]
+            user.auth_token.delete()  # type: ignore
 
         return Response(status=status.HTTP_200_OK)

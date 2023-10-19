@@ -2,11 +2,11 @@ import re
 from datetime import timedelta
 
 import pytest
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from pytest_mock import MockerFixture
 
 from authentication.services import activate_user
-from config.django import settings
 from factories import ConfirmationOTPFactory, UserFactory
 
 

@@ -2,7 +2,7 @@
 line_length = 119
 profile = "black"
 skip = [".gitignore"]
-skip_glob = ["env/*"]
+skip_glob = ["env/*", "*/migrations/*"]
 
 [tool.black]
 line-length = 119

@@ -1,11 +1,11 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
 
 from authentication.models import ConfirmationOTP, User
-from config.django import settings
 from tasks.celery import task_send_confirmation_email
 
 

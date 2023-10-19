@@ -33,8 +33,8 @@ class Board(TimestampedModel):
     name = models.CharField(
         unique=True, max_length=20, validators=[MinLengthValidator(3), _validate_contains_allowed_characters]
     )
-    members = models.ManyToManyField(User, related_name="members")
-    admins = models.ManyToManyField(User, related_name="admins")
+    members = models.ManyToManyField(User, related_name="members")  # type: ignore
+    admins = models.ManyToManyField(User, related_name="admins")  # type: ignore
 
 
 class Post(TimestampedModel):

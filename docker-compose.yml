@@ -10,7 +10,7 @@ services:
     env_file:
       - .env
     environment:
-      - DEBUG=${DEBUG}
+      - DJANGO_DEBUG=${DJANGO_DEBUG}
       - SECRET_KEY=${SECRET_KEY}
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
     volumes:

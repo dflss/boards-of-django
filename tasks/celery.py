@@ -1,18 +1,28 @@
-import os
 from typing import TYPE_CHECKING
 
-from celery import Celery
+from django.conf import settings
 from django.core.mail import send_mail
-
-from config.django import settings
 
 if TYPE_CHECKING:
     from authentication.models import ConfirmationOTP, User
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.django.settings")
+import os
+
+from celery import Celery
+
+# set the default Django settings module for the 'celery' program.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.django.base")
+
 app = Celery("boards_of_django")
-app.config_from_object("config.django:settings", namespace="CELERY")
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+
+# Using a string here means the worker doesn't have to serialize
+# the configuration object to child processes.
+# - namespace='CELERY' means all celery-related configuration keys
+#   should have a `CELERY_` prefix.
+app.config_from_object("django.conf:settings", namespace="CELERY")
+
+# Load task modules from all registered Django app configs.
+app.autodiscover_tasks()
 
 
 @app.task
