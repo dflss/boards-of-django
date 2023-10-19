@@ -25,7 +25,7 @@ class RequestWithUser(Request):
     user: "User"
 
 
-def raise_django_exception_as_drf_exception(exc: Exception, ctx: dict[str, Any]) -> "Response" | None:
+def raise_django_exception_as_drf_exception(exc: Exception, ctx: dict[str, Any]) -> "Response | None":
     """Create custom exception handler.
 
     Map between django.core.exceptions.ValidationError and

@@ -10,12 +10,12 @@ jobs:
     - name: Build docker
       run: docker-compose build
     - name: Type check
-      run: docker-compose run django mypy --config mypy.ini boards_of_django/
+      run: docker-compose run django mypy --config pyproject.toml boards_of_django/
     - name: Run flake8
       run: docker-compose run django flake8
-    - name: Run isort
-      run: docker-compose run django isort
+    - name: Run ruff
+      run: docker-compose run django ruff check .
     - name: Run migrations
       run: docker-compose run django python manage.py migrate
     - name: Run tests
-      run: docker-compose run django pytest
+      run: docker-compose run django pytest --cov-fail-under=95
