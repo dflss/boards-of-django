@@ -1,5 +1,7 @@
 celery
 Django
+django-environ
+django-filter
 djangorestframework
 drf-yasg
 gunicorn

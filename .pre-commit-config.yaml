@@ -21,6 +21,7 @@ repos:
         - psycopg2
         - pytest
         - pytest_factoryboy
+        - django-environ
         - djangorestframework
         - drf_yasg
         - django-filter
