@@ -1,15 +1,15 @@
-from typing import Any, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any
 
 from django.db.models import DateTimeField
 
-from boards_of_django.common.types import DjangoModelType
+if TYPE_CHECKING:
+    from boards_of_django.common.types import DjangoModelType
 
 
 def model_update(
-    *, instance: DjangoModelType, fields: List[str], data: Dict[str, Any]
-) -> Tuple[DjangoModelType, bool]:
-    """
-    Update model.
+    *, instance: "DjangoModelType", fields: list[str], data: dict[str, Any]
+) -> tuple["DjangoModelType", bool]:
+    """Update model.
 
     This code is a generic update service meant to be reused in local update services and was taken from
     Django-Styleguide: https://github.com/HackSoftware/Django-Styleguide-Example
@@ -20,7 +20,7 @@ def model_update(
     fields : Fields to be updated. Note that fields with auto_add=True are automatically updated
     data : Dictionary with fields to be updated and their new values
 
-    Returns
+    Returns:
     -------
     Tuple with the following elements:
         1. The instance we updated

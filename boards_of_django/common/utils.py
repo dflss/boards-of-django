@@ -1,29 +1,31 @@
-from typing import Any, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.urls import reverse
 from django.utils.http import urlencode
 from rest_framework import exceptions, serializers
 from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.serializers import Serializer, as_serializer_error
+from rest_framework.serializers import as_serializer_error
 from rest_framework.views import exception_handler
 
-from boards_of_django.authentication.models import User
+if TYPE_CHECKING:
+    from rest_framework.response import Response
+    from rest_framework.serializers import Serializer
+
+    from boards_of_django.authentication.models import User
 
 
 class RequestWithUser(Request):
-    """
-    Custom request type required to resolve issues with mypy when using a custom user model.
+    """Custom request type required to resolve issues with mypy when using a custom user model.
 
     Without this class, all User usages in APIViews need explicit casting to User.
     More information: https://stackoverflow.com/questions/61715819/request-user-returning-abstract-user-django-stubs
     """
 
-    user: User
+    user: "User"
 
 
-def raise_django_exception_as_drf_exception(exc: Exception, ctx: Dict[str, Any]) -> Optional[Response]:
+def raise_django_exception_as_drf_exception(exc: Exception, ctx: dict[str, Any]) -> "Response | None":
     """Create custom exception handler.
 
     Map between django.core.exceptions.ValidationError and
@@ -44,7 +46,7 @@ def raise_django_exception_as_drf_exception(exc: Exception, ctx: Dict[str, Any])
 
 
 def reverse_with_query_params(
-    viewname: str, kwargs: Optional[Dict[Any, Any]] = None, query_kwargs: Optional[Dict[str, Any]] = None
+    viewname: str, kwargs: dict[Any, Any] | None = None, query_kwargs: dict[str, Any] | None = None
 ) -> str:
     """Reverse a url that contains query parameters.
 
@@ -60,7 +62,7 @@ def reverse_with_query_params(
     kwargs : Dictionary where key is the name of the ulr param and value is its value
     query_kwargs : Dictionary where key is the name of the query param and value is its value
 
-    Returns
+    Returns:
     -------
     Url string
     """
@@ -70,18 +72,17 @@ def reverse_with_query_params(
     return base_url
 
 
-def _create_serializer_class(name: str, fields: Dict[str, Any]) -> Type[Serializer[Any]]:
+def _create_serializer_class(name: str, fields: dict[str, Any]) -> type["Serializer[Any]"]:
     return type(name, (serializers.Serializer,), fields)
 
 
 def inline_serializer(
     *,
-    fields: Dict[str, Any],
-    data: Optional[Dict[str, Any]] = None,
-    **kwargs: Optional[Dict[str, Any]],
-) -> Serializer[Any]:
-    """
-    Create a nested serializer.
+    fields: dict[str, Any],
+    data: dict[str, Any] | None = None,
+    **kwargs: dict[str, Any] | None,
+) -> "Serializer[Any]":
+    """Create a nested serializer.
 
     This code is taken from Django-Styleguide: https://github.com/HackSoftware/Django-Styleguide#nested-serializers
 
@@ -90,7 +91,7 @@ def inline_serializer(
     fields : Serializer fields
     data : Serializer data
 
-    Returns
+    Returns:
     -------
     Serializer
 
@@ -98,6 +99,6 @@ def inline_serializer(
     serializer_class = _create_serializer_class(name="", fields=fields)
 
     if data is not None:
-        return serializer_class(data=data, **kwargs)  # type: ignore
+        return serializer_class(data=data, **kwargs)  # type: ignore[arg-type]
 
-    return serializer_class(**kwargs)  # type: ignore
+    return serializer_class(**kwargs)  # type: ignore[arg-type]

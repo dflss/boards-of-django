@@ -1,16 +1,25 @@
 repos:
--   repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        args: ["--filter-files"]
-
-- repo: https://github.com/ambv/black
+- repo: https://github.com/charliermarsh/ruff-pre-commit
+  rev: v0.0.270
+  hooks:
+    - id: ruff
+      args: [ --fix, --exit-non-zero-on-fix ]
+# Using flake8 for TC rules only, because rules TC1/TC2 are not yet implemented in ruff
+# (only rules TC001 - TC005 are available).
+- repo: https://github.com/pycqa/flake8
+  rev: 6.0.0
+  hooks:
+    - id: flake8
+      args: ['--select=TC']
+      entry: pflake8
+      additional_dependencies:
+        - pyproject-flake8
+        - flake8-type-checking
+- repo: https://github.com/psf/black
   rev: 23.7.0
   hooks:
     - id: black
-      args: [--diff, --check]
-
+      language_version: python3.10
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v1.4.1
   hooks:
@@ -32,25 +41,12 @@ repos:
         - pytest_mock
       args: [--strict]
       exclude: '^env/|migrations|.git|.mypy_cache|pytest_cache'
-
--   repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
-    hooks:
-    - id: flake8
-      additional_dependencies: ["Flake8-pyproject"]
-
--   repo: https://github.com/guilatrova/tryceratops
-    rev: v1.1.0
-    hooks:
-      - id: tryceratops
-
--   repo: https://github.com/PyCQA/pydocstyle
-    rev: 6.1.1
-    hooks:
-      - id: pydocstyle
-        name: pydocstyle
-        entry: pydocstyle
-        language: python
-        types: [ python ]
-        additional_dependencies: ["toml"]
-        exclude: '^env/|tests|migrations|.git|.mypy_cache|pytest_cache|apps.py|factories.py|conftest.py'
+- repo: local
+  hooks:
+    - id: pytest
+      name: pytest
+      entry: docker-compose run --rm -T django pytest --cov-fail-under=95
+      language: system
+      pass_filenames: false
+      always_run: true
+      stages: ["push", "merge-commit", "manual"]

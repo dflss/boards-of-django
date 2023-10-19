@@ -16,12 +16,14 @@ cfgv==3.3.1
     # via pre-commit
 charset-normalizer==3.2.0
     # via requests
+classify-imports==4.2.0
+    # via flake8-type-checking
 click==8.1.6
     # via
     #   black
     #   pip-tools
-coverage==7.2.7
-    # via -r dev-requirements.in
+coverage[toml]==7.2.7
+    # via pytest-cov
 distlib==0.3.7
     # via virtualenv
 django==4.2.4
@@ -52,7 +54,10 @@ flake8==6.1.0
     # via
     #   -r dev-requirements.in
     #   flake8-pyproject
+    #   flake8-type-checking
 flake8-pyproject==1.2.3
+    # via -r dev-requirements.in
+flake8-type-checking==2.5.1
     # via -r dev-requirements.in
 identify==2.5.26
     # via pre-commit
@@ -62,8 +67,6 @@ inflection==0.5.1
     # via pytest-factoryboy
 iniconfig==2.0.0
     # via pytest
-isort==5.12.0
-    # via -r dev-requirements.in
 mccabe==0.7.0
     # via flake8
 mypy==1.4.1
@@ -94,9 +97,7 @@ pluggy==1.2.0
 pre-commit==3.3.3
     # via -r dev-requirements.in
 pycodestyle==2.11.0
-    # via
-    #   -r dev-requirements.in
-    #   flake8
+    # via flake8
 pyflakes==3.1.0
     # via flake8
 pyproject-hooks==1.0.0
@@ -104,9 +105,12 @@ pyproject-hooks==1.0.0
 pytest==7.4.0
     # via
     #   -r dev-requirements.in
+    #   pytest-cov
     #   pytest-django
     #   pytest-factoryboy
     #   pytest-mock
+pytest-cov==4.1.0
+    # via -r dev-requirements.in
 pytest-django==4.5.2
     # via -r dev-requirements.in
 pytest-factoryboy==2.5.1
@@ -121,6 +125,8 @@ pyyaml==5.3.1
     #   pre-commit
 requests==2.31.0
     # via djangorestframework-stubs
+ruff==0.1.0
+    # via -r dev-requirements.in
 six==1.16.0
     # via python-dateutil
 sqlparse==0.4.4
@@ -129,6 +135,7 @@ tomli==2.0.1
     # via
     #   black
     #   build
+    #   coverage
     #   django-stubs
     #   flake8-pyproject
     #   mypy

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from django.urls import reverse
@@ -6,11 +6,13 @@ from rest_framework import status
 
 from boards_of_django.boards.models import Board, Comment, Post
 from boards_of_django.common.utils import reverse_with_query_params
-from conftest import APIClientWithUser
 from factories import BoardFactory, CommentFactory, PostFactory, UserFactory
 
+if TYPE_CHECKING:
+    from conftest import APIClientWithUser
 
-def boards_url(query_kwargs: Optional[Dict[str, Any]] = None) -> str:
+
+def boards_url(query_kwargs: dict[str, Any] | None = None) -> str:
     return reverse_with_query_params("boards:boards", query_kwargs=query_kwargs)
 
 
@@ -26,7 +28,7 @@ def boards_add_admin_url(board_id: int) -> str:
     return reverse("boards:board-detail-add-admin", kwargs={"board_id": board_id})
 
 
-def posts_url(query_kwargs: Optional[Dict[str, Any]] = None) -> str:
+def posts_url(query_kwargs: dict[str, Any] | None = None) -> str:
     return reverse_with_query_params("boards:posts", query_kwargs=query_kwargs)
 
 
@@ -34,7 +36,7 @@ def posts_detail_url(post_id: int) -> str:
     return reverse("boards:post-detail", kwargs={"post_id": post_id})
 
 
-def comments_url(query_kwargs: Optional[Dict[str, Any]] = None) -> str:
+def comments_url(query_kwargs: dict[str, Any] | None = None) -> str:
     return reverse_with_query_params("boards:comments", query_kwargs=query_kwargs)
 
 
@@ -42,7 +44,7 @@ def comments_detail_url(comment_id: int) -> str:
     return reverse("boards:comment-detail", kwargs={"comment_id": comment_id})
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
     "data",
     [
@@ -57,7 +59,7 @@ def comments_detail_url(comment_id: int) -> str:
         },
     ],
 )
-def test_create_board_success(api_client_with_credentials: APIClientWithUser, data: Dict[str, str]) -> None:
+def test_create_board_success(api_client_with_credentials: "APIClientWithUser", data: dict[str, str]) -> None:
     response = api_client_with_credentials.post(boards_url(), data)
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -65,13 +67,13 @@ def test_create_board_success(api_client_with_credentials: APIClientWithUser, da
 
     board = Board.objects.first()
 
-    assert list(board.members.all()) == [api_client_with_credentials.user]  # type: ignore
-    assert list(board.admins.all()) == [api_client_with_credentials.user]  # type: ignore
+    assert list(board.members.all()) == [api_client_with_credentials.user]  # type: ignore[union-attr]
+    assert list(board.admins.all()) == [api_client_with_credentials.user]  # type: ignore[union-attr]
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
-    "data, expected_response_json",
+    ("data", "expected_response_json"),
     [
         (
             {
@@ -106,9 +108,9 @@ def test_create_board_success(api_client_with_credentials: APIClientWithUser, da
     ],
 )
 def test_create_board_validation_failed(
-    api_client_with_credentials: APIClientWithUser,
-    data: Dict[str, str],
-    expected_response_json: Dict[str, List[str]],
+    api_client_with_credentials: "APIClientWithUser",
+    data: dict[str, str],
+    expected_response_json: dict[str, list[str]],
 ) -> None:
     response = api_client_with_credentials.post(boards_url(), data)
 
@@ -117,9 +119,9 @@ def test_create_board_validation_failed(
     assert Board.objects.count() == 0
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_create_board_name_not_unique(
-    api_client_with_credentials: APIClientWithUser,
+    api_client_with_credentials: "APIClientWithUser",
 ) -> None:
     BoardFactory(name="Test")
 
@@ -130,8 +132,8 @@ def test_create_board_name_not_unique(
     assert Board.objects.count() == 1
 
 
-@pytest.mark.django_db
-def test_get_board_list(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_board_list(api_client_with_credentials: "APIClientWithUser") -> None:
     board_1 = BoardFactory()
     board_2 = BoardFactory()
     board_1.members.add(api_client_with_credentials.user)
@@ -143,8 +145,8 @@ def test_get_board_list(api_client_with_credentials: APIClientWithUser) -> None:
     assert response.json()["results"] == [{"name": board_1.name}, {"name": board_2.name}]
 
 
-@pytest.mark.django_db
-def test_get_board_list_filter_by_name(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_board_list_filter_by_name(api_client_with_credentials: "APIClientWithUser") -> None:
     board_1 = BoardFactory()
 
     response = api_client_with_credentials.get(boards_url(query_kwargs={"name": board_1.name}))
@@ -154,8 +156,8 @@ def test_get_board_list_filter_by_name(api_client_with_credentials: APIClientWit
     assert response.json()["results"] == [{"name": board_1.name}]
 
 
-@pytest.mark.django_db
-def test_get_board_list_filter_by_name_multiple_results(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_board_list_filter_by_name_multiple_results(api_client_with_credentials: "APIClientWithUser") -> None:
     board_1 = BoardFactory(name="test 1")
     board_2 = BoardFactory(name="test 2")
     BoardFactory(name="something else")
@@ -167,8 +169,8 @@ def test_get_board_list_filter_by_name_multiple_results(api_client_with_credenti
     assert response.json()["results"] == [{"name": board_1.name}, {"name": board_2.name}]
 
 
-@pytest.mark.django_db
-def test_get_board_list_filter_is_member(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_board_list_filter_is_member(api_client_with_credentials: "APIClientWithUser") -> None:
     board_1 = BoardFactory()
     BoardFactory()
     user = api_client_with_credentials.user
@@ -181,8 +183,8 @@ def test_get_board_list_filter_is_member(api_client_with_credentials: APIClientW
     assert response.json()["results"] == [{"name": board_1.name}]
 
 
-@pytest.mark.django_db
-def test_get_board_list_filter_is_admin(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_board_list_filter_is_admin(api_client_with_credentials: "APIClientWithUser") -> None:
     board_1 = BoardFactory()
     board_2 = BoardFactory()
     BoardFactory()
@@ -197,8 +199,8 @@ def test_get_board_list_filter_is_admin(api_client_with_credentials: APIClientWi
     assert response.json()["results"] == [{"name": board_1.name}]
 
 
-@pytest.mark.django_db
-def test_get_board_detail_success(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_board_detail_success(api_client_with_credentials: "APIClientWithUser") -> None:
     board = BoardFactory()
 
     response = api_client_with_credentials.get(boards_detail_url(board_id=board.pk))
@@ -207,15 +209,15 @@ def test_get_board_detail_success(api_client_with_credentials: APIClientWithUser
     assert response.json() == {"name": board.name}
 
 
-@pytest.mark.django_db
-def test_get_board_detail_not_found(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_board_detail_not_found(api_client_with_credentials: "APIClientWithUser") -> None:
     response = api_client_with_credentials.get(boards_detail_url(board_id=0))
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-@pytest.mark.django_db
-def test_join_board(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_join_board(api_client_with_credentials: "APIClientWithUser") -> None:
     board = BoardFactory()
     assert list(board.members.all()) == []
 
@@ -225,15 +227,15 @@ def test_join_board(api_client_with_credentials: APIClientWithUser) -> None:
     assert list(board.members.all()) == [api_client_with_credentials.user]
 
 
-@pytest.mark.django_db
-def test_join_board_not_found(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_join_board_not_found(api_client_with_credentials: "APIClientWithUser") -> None:
     response = api_client_with_credentials.post(boards_join_url(board_id=0))
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-@pytest.mark.django_db
-def test_add_admin_to_board(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_add_admin_to_board(api_client_with_credentials: "APIClientWithUser") -> None:
     board = BoardFactory()
     board.admins.add(api_client_with_credentials.user)
     user_to_add = UserFactory()
@@ -247,8 +249,8 @@ def test_add_admin_to_board(api_client_with_credentials: APIClientWithUser) -> N
     assert list(board.admins.all()) == [api_client_with_credentials.user, user_to_add]
 
 
-@pytest.mark.django_db
-def test_add_admin_who_is_already_an_admin_to_board(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_add_admin_who_is_already_an_admin_to_board(api_client_with_credentials: "APIClientWithUser") -> None:
     board = BoardFactory()
     board.admins.add(api_client_with_credentials.user)
     user_to_add = UserFactory()
@@ -263,8 +265,8 @@ def test_add_admin_who_is_already_an_admin_to_board(api_client_with_credentials:
     assert list(board.admins.all()) == [api_client_with_credentials.user, user_to_add]
 
 
-@pytest.mark.django_db
-def test_add_admin_who_is_not_a_member_to_board(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_add_admin_who_is_not_a_member_to_board(api_client_with_credentials: "APIClientWithUser") -> None:
     board = BoardFactory()
     board.admins.add(api_client_with_credentials.user)
     user_to_add = UserFactory()
@@ -277,8 +279,8 @@ def test_add_admin_who_is_not_a_member_to_board(api_client_with_credentials: API
     assert response.json() == {"users_to_add": ["Only board members can be added as board admins."]}
 
 
-@pytest.mark.django_db
-def test_add_admin_by_user_that_is_not_an_admin(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_add_admin_by_user_that_is_not_an_admin(api_client_with_credentials: "APIClientWithUser") -> None:
     board = BoardFactory()
     user_to_add = UserFactory()
 
@@ -290,8 +292,8 @@ def test_add_admin_by_user_that_is_not_an_admin(api_client_with_credentials: API
     assert response.json() == {"detail": "Only board admin can perform this action."}
 
 
-@pytest.mark.django_db
-def test_add_admin_board_not_found(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_add_admin_board_not_found(api_client_with_credentials: "APIClientWithUser") -> None:
     user_to_add = UserFactory()
 
     response = api_client_with_credentials.post(
@@ -301,8 +303,8 @@ def test_add_admin_board_not_found(api_client_with_credentials: APIClientWithUse
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-@pytest.mark.django_db
-def test_create_post_success(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_create_post_success(api_client_with_credentials: "APIClientWithUser") -> None:
     board = BoardFactory()
     board.members.add(api_client_with_credentials.user)
 
@@ -313,13 +315,13 @@ def test_create_post_success(api_client_with_credentials: APIClientWithUser) -> 
 
     post = Post.objects.first()
 
-    assert post.creator == api_client_with_credentials.user  # type: ignore
-    assert post.board == board  # type: ignore
+    assert post.creator == api_client_with_credentials.user  # type: ignore[union-attr]
+    assert post.board == board  # type: ignore[union-attr]
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
-    "text, expected_response_json",
+    ("text", "expected_response_json"),
     [
         (
             "test",
@@ -332,9 +334,9 @@ def test_create_post_success(api_client_with_credentials: APIClientWithUser) -> 
     ],
 )
 def test_create_post_validation_failed(
-    api_client_with_credentials: APIClientWithUser,
+    api_client_with_credentials: "APIClientWithUser",
     text: str,
-    expected_response_json: Dict[str, List[str]],
+    expected_response_json: dict[str, list[str]],
 ) -> None:
     board = BoardFactory()
     board.members.add(api_client_with_credentials.user)
@@ -346,8 +348,8 @@ def test_create_post_validation_failed(
     assert Post.objects.count() == 0
 
 
-@pytest.mark.django_db
-def test_cannot_create_post_if_not_a_board_member(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_cannot_create_post_if_not_a_board_member(api_client_with_credentials: "APIClientWithUser") -> None:
     board = BoardFactory()
 
     response = api_client_with_credentials.post(posts_url(), {"text": "test test test", "board": board.id})
@@ -356,8 +358,8 @@ def test_cannot_create_post_if_not_a_board_member(api_client_with_credentials: A
     assert response.json() == {"board": ["Only board members can add posts. You are not a member of this board."]}
 
 
-@pytest.mark.django_db
-def test_get_post_list(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_post_list(api_client_with_credentials: "APIClientWithUser") -> None:
     post_1 = PostFactory()
     post_2 = PostFactory()
 
@@ -379,8 +381,8 @@ def test_get_post_list(api_client_with_credentials: APIClientWithUser) -> None:
     ]
 
 
-@pytest.mark.django_db
-def test_get_post_list_filter_by_text(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_post_list_filter_by_text(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory(text="Text that I am looking for")
     PostFactory(text="Something unimportant")
 
@@ -393,8 +395,8 @@ def test_get_post_list_filter_by_text(api_client_with_credentials: APIClientWith
     ]
 
 
-@pytest.mark.django_db
-def test_get_post_list_filter_by_board(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_post_list_filter_by_board(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory()
     PostFactory()
 
@@ -407,8 +409,8 @@ def test_get_post_list_filter_by_board(api_client_with_credentials: APIClientWit
     ]
 
 
-@pytest.mark.django_db
-def test_get_post_list_filter_own_posts(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_post_list_filter_own_posts(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory(creator=api_client_with_credentials.user)
     PostFactory(creator=UserFactory())
 
@@ -421,8 +423,8 @@ def test_get_post_list_filter_own_posts(api_client_with_credentials: APIClientWi
     ]
 
 
-@pytest.mark.django_db
-def test_get_post_list_filter_not_own_posts(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_post_list_filter_not_own_posts(api_client_with_credentials: "APIClientWithUser") -> None:
     PostFactory(creator=api_client_with_credentials.user)
     post = PostFactory(creator=UserFactory())
 
@@ -435,8 +437,8 @@ def test_get_post_list_filter_not_own_posts(api_client_with_credentials: APIClie
     ]
 
 
-@pytest.mark.django_db
-def test_get_post_detail_success(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_post_detail_success(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory()
 
     response = api_client_with_credentials.get(posts_detail_url(post_id=post.pk))
@@ -449,15 +451,15 @@ def test_get_post_detail_success(api_client_with_credentials: APIClientWithUser)
     }
 
 
-@pytest.mark.django_db
-def test_get_post_detail_not_found(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_post_detail_not_found(api_client_with_credentials: "APIClientWithUser") -> None:
     response = api_client_with_credentials.get(posts_detail_url(post_id=0))
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-@pytest.mark.django_db
-def test_update_post_success(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_update_post_success(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory(text="old post content", creator=api_client_with_credentials.user)
 
     response = api_client_with_credentials.patch(posts_detail_url(post_id=post.pk), data={"text": "new post content"})
@@ -468,8 +470,8 @@ def test_update_post_success(api_client_with_credentials: APIClientWithUser) -> 
     assert post.edited is True
 
 
-@pytest.mark.django_db
-def test_update_post_nothing_changed(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_update_post_nothing_changed(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory(text="old post content", creator=api_client_with_credentials.user)
 
     response = api_client_with_credentials.patch(posts_detail_url(post_id=post.pk), data={"text": "old post content"})
@@ -480,9 +482,9 @@ def test_update_post_nothing_changed(api_client_with_credentials: APIClientWithU
     assert post.edited is False
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
-    "text, expected_response_json",
+    ("text", "expected_response_json"),
     [
         (
             "test",
@@ -495,9 +497,9 @@ def test_update_post_nothing_changed(api_client_with_credentials: APIClientWithU
     ],
 )
 def test_update_post_validation_failed(
-    api_client_with_credentials: APIClientWithUser,
+    api_client_with_credentials: "APIClientWithUser",
     text: str,
-    expected_response_json: Dict[str, List[str]],
+    expected_response_json: dict[str, list[str]],
 ) -> None:
     board = BoardFactory()
     board.members.add(api_client_with_credentials.user)
@@ -511,8 +513,8 @@ def test_update_post_validation_failed(
     assert post.text == "old post content"
 
 
-@pytest.mark.django_db
-def test_update_post_by_non_creator(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_update_post_by_non_creator(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory(text="old post content", creator=UserFactory())
 
     response = api_client_with_credentials.patch(posts_detail_url(post_id=post.pk), data={"text": "new post content"})
@@ -521,15 +523,15 @@ def test_update_post_by_non_creator(api_client_with_credentials: APIClientWithUs
     assert response.json() == {"detail": "Only post creators can edit posts. You are not a creator of this post."}
 
 
-@pytest.mark.django_db
-def test_update_post_not_found(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_update_post_not_found(api_client_with_credentials: "APIClientWithUser") -> None:
     response = api_client_with_credentials.patch(posts_detail_url(post_id=0), data={"text": "new post content"})
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-@pytest.mark.django_db
-def test_delete_post_success(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_delete_post_success(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory(creator=api_client_with_credentials.user)
 
     response = api_client_with_credentials.delete(posts_detail_url(post_id=post.id))
@@ -538,8 +540,8 @@ def test_delete_post_success(api_client_with_credentials: APIClientWithUser) -> 
     assert not Post.objects.filter(id=post.id).exists()
 
 
-@pytest.mark.django_db
-def test_delete_post_by_non_creator(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_delete_post_by_non_creator(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory(creator=UserFactory())
 
     response = api_client_with_credentials.delete(posts_detail_url(post_id=post.id))
@@ -548,15 +550,15 @@ def test_delete_post_by_non_creator(api_client_with_credentials: APIClientWithUs
     assert Post.objects.filter(id=post.id).exists()
 
 
-@pytest.mark.django_db
-def test_delete_post_not_found(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_delete_post_not_found(api_client_with_credentials: "APIClientWithUser") -> None:
     response = api_client_with_credentials.delete(posts_detail_url(post_id=0))
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-@pytest.mark.django_db
-def test_get_post_detail_updated_post_has_edited_flag_set(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_post_detail_updated_post_has_edited_flag_set(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory(text="old post content", creator=api_client_with_credentials.user)
     api_client_with_credentials.patch(posts_detail_url(post_id=post.pk), data={"text": "new post content"})
 
@@ -570,8 +572,8 @@ def test_get_post_detail_updated_post_has_edited_flag_set(api_client_with_creden
     }
 
 
-@pytest.mark.django_db
-def test_get_post_list_updated_post_has_edited_flag_set(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_post_list_updated_post_has_edited_flag_set(api_client_with_credentials: "APIClientWithUser") -> None:
     post_1 = PostFactory(text="old post content", creator=api_client_with_credentials.user)
     post_2 = PostFactory()
     api_client_with_credentials.patch(posts_detail_url(post_id=post_1.pk), data={"text": "new post content"})
@@ -593,8 +595,8 @@ def test_get_post_list_updated_post_has_edited_flag_set(api_client_with_credenti
     ]
 
 
-@pytest.mark.django_db
-def test_create_comment_success(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_create_comment_success(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory()
     post.board.members.add(api_client_with_credentials.user)
 
@@ -611,8 +613,8 @@ def test_create_comment_success(api_client_with_credentials: APIClientWithUser) 
     assert comment.parent is None
 
 
-@pytest.mark.django_db
-def test_create_comment_reply_success(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_create_comment_reply_success(api_client_with_credentials: "APIClientWithUser") -> None:
     comment_parent = CommentFactory()
     comment_parent.post.board.members.add(api_client_with_credentials.user)
 
@@ -631,9 +633,9 @@ def test_create_comment_reply_success(api_client_with_credentials: APIClientWith
     assert comment.parent == comment_parent
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 @pytest.mark.parametrize(
-    "text, expected_response_json",
+    ("text", "expected_response_json"),
     [
         (
             "",
@@ -646,9 +648,9 @@ def test_create_comment_reply_success(api_client_with_credentials: APIClientWith
     ],
 )
 def test_create_comment_validation_failed(
-    api_client_with_credentials: APIClientWithUser,
+    api_client_with_credentials: "APIClientWithUser",
     text: str,
-    expected_response_json: Dict[str, List[str]],
+    expected_response_json: dict[str, list[str]],
 ) -> None:
     post = PostFactory()
     post.board.members.add(api_client_with_credentials.user)
@@ -660,8 +662,8 @@ def test_create_comment_validation_failed(
     assert Comment.objects.count() == 0
 
 
-@pytest.mark.django_db
-def test_cannot_create_comment_if_not_a_board_member(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_cannot_create_comment_if_not_a_board_member(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory()
 
     response = api_client_with_credentials.post(comments_url(), {"text": "test test test", "post": post.id})
@@ -670,9 +672,9 @@ def test_cannot_create_comment_if_not_a_board_member(api_client_with_credentials
     assert response.json() == {"board": ["Only board members can add comments. You are not a member of this board."]}
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_cannot_create_comment_if_parent_does_not_belong_to_post_given(
-    api_client_with_credentials: APIClientWithUser,
+    api_client_with_credentials: "APIClientWithUser",
 ) -> None:
     post = PostFactory()
     post.board.members.add(api_client_with_credentials.user)
@@ -686,8 +688,8 @@ def test_cannot_create_comment_if_parent_does_not_belong_to_post_given(
     assert response.json() == {"parent": ["The parent comment does not belong to the post specified."]}
 
 
-@pytest.mark.django_db
-def test_get_comment_list(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_comment_list(api_client_with_credentials: "APIClientWithUser") -> None:
     comment_1 = CommentFactory()
     comment_2 = CommentFactory()
 
@@ -712,8 +714,8 @@ def test_get_comment_list(api_client_with_credentials: APIClientWithUser) -> Non
     ]
 
 
-@pytest.mark.django_db
-def test_get_comment_list_filter_by_text(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_comment_list_filter_by_text(api_client_with_credentials: "APIClientWithUser") -> None:
     comment = CommentFactory(text="Text that I am looking for")
     CommentFactory(text="Something unimportant")
 
@@ -730,8 +732,8 @@ def test_get_comment_list_filter_by_text(api_client_with_credentials: APIClientW
     ]
 
 
-@pytest.mark.django_db
-def test_get_comment_list_filter_by_post(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_comment_list_filter_by_post(api_client_with_credentials: "APIClientWithUser") -> None:
     comment = CommentFactory(text="Text that I am looking for")
     CommentFactory(text="Something unimportant")
 
@@ -748,8 +750,8 @@ def test_get_comment_list_filter_by_post(api_client_with_credentials: APIClientW
     ]
 
 
-@pytest.mark.django_db
-def test_get_comment_list_filter_by_parent(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_comment_list_filter_by_parent(api_client_with_credentials: "APIClientWithUser") -> None:
     post = PostFactory()
     comment = CommentFactory(text="Text that I am looking for", parent=CommentFactory(post=post), post=post)
     CommentFactory(text="Something unimportant", post=post)
@@ -769,8 +771,8 @@ def test_get_comment_list_filter_by_parent(api_client_with_credentials: APIClien
     ]
 
 
-@pytest.mark.django_db
-def test_get_comment_detail_success(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_comment_detail_success(api_client_with_credentials: "APIClientWithUser") -> None:
     comment = CommentFactory()
 
     response = api_client_with_credentials.get(comments_detail_url(comment_id=comment.pk))
@@ -783,8 +785,8 @@ def test_get_comment_detail_success(api_client_with_credentials: APIClientWithUs
     }
 
 
-@pytest.mark.django_db
-def test_get_comment_detail_not_found(api_client_with_credentials: APIClientWithUser) -> None:
+@pytest.mark.django_db()
+def test_get_comment_detail_not_found(api_client_with_credentials: "APIClientWithUser") -> None:
     response = api_client_with_credentials.get(comments_detail_url(comment_id=0))
 
     assert response.status_code == status.HTTP_404_NOT_FOUND

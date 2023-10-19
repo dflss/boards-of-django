@@ -1,4 +1,4 @@
-from typing import List
+from typing import TYPE_CHECKING
 
 import factory
 from django.contrib.auth import get_user_model
@@ -6,13 +6,15 @@ from django.contrib.auth.hashers import make_password
 from factory import Faker, SubFactory, fuzzy
 
 from boards_of_django.authentication.models import ConfirmationOTP
-from boards_of_django.authentication.models import User as UserType
 from boards_of_django.boards.models import Board, Comment, Post
+
+if TYPE_CHECKING:
+    from boards_of_django.authentication.models import User as UserType
 
 User = get_user_model()
 
 
-class UserFactory(factory.django.DjangoModelFactory):  # type: ignore
+class UserFactory(factory.django.DjangoModelFactory):  # type: ignore[misc]
     class Meta:
         model = User
 
@@ -21,7 +23,7 @@ class UserFactory(factory.django.DjangoModelFactory):  # type: ignore
     password = factory.LazyFunction(lambda: make_password("password"))
 
 
-class ConfirmationOTPFactory(factory.django.DjangoModelFactory):  # type: ignore
+class ConfirmationOTPFactory(factory.django.DjangoModelFactory):  # type: ignore[misc]
     class Meta:
         model = ConfirmationOTP
 
@@ -29,28 +31,28 @@ class ConfirmationOTPFactory(factory.django.DjangoModelFactory):  # type: ignore
     otp = fuzzy.FuzzyInteger(low=1000, high=9999)
 
 
-class BoardFactory(factory.django.DjangoModelFactory):  # type: ignore
+class BoardFactory(factory.django.DjangoModelFactory):  # type: ignore[misc]
     class Meta:
         model = Board
 
     name = factory.Sequence(lambda n: f"board_{n}")
 
-    @factory.post_generation  # type: ignore
-    def members(self, create: bool, extracted: List[UserType]) -> None:
+    @factory.post_generation  # type: ignore[misc]
+    def members(self, create: bool, extracted: list["UserType"]) -> None:
         if not create:
             return
         if extracted:
             self.members.add(*extracted)
 
-    @factory.post_generation  # type: ignore
-    def admins(self, create: bool, extracted: List[UserType]) -> None:
+    @factory.post_generation  # type: ignore[misc]
+    def admins(self, create: bool, extracted: list["UserType"]) -> None:
         if not create:
             return
         if extracted:
             self.admins.add(*extracted)
 
 
-class PostFactory(factory.django.DjangoModelFactory):  # type: ignore
+class PostFactory(factory.django.DjangoModelFactory):  # type: ignore[misc]
     class Meta:
         model = Post
 
@@ -59,7 +61,7 @@ class PostFactory(factory.django.DjangoModelFactory):  # type: ignore
     board = SubFactory(BoardFactory)
 
 
-class CommentFactory(factory.django.DjangoModelFactory):  # type: ignore
+class CommentFactory(factory.django.DjangoModelFactory):  # type: ignore[misc]
     class Meta:
         model = Comment
 

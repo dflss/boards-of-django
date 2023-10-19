@@ -1,4 +1,4 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -20,8 +20,10 @@ from boards_of_django.boards.services import (
     update_post,
 )
 from boards_of_django.common.pagination import LimitOffsetPagination, get_paginated_response
-from boards_of_django.common.utils import RequestWithUser as Request
 from boards_of_django.common.utils import inline_serializer
+
+if TYPE_CHECKING:
+    from boards_of_django.common.utils import RequestWithUser as Request
 
 
 class BoardsApi(APIView):
@@ -32,16 +34,15 @@ class BoardsApi(APIView):
     class InputSerializer(serializers.Serializer[Any]):
         name = serializers.CharField(required=True)
 
-    @swagger_auto_schema(  # type: ignore
+    @swagger_auto_schema(  # type: ignore[misc]
         request_body=InputSerializer,
         responses={
             201: openapi.Response(description="board was successfully created"),
             400: openapi.Response(description="input validation failed"),
         },
     )
-    def post(self, request: Request) -> Response:
-        """
-        Create a new board.
+    def post(self, request: "Request") -> Response:
+        """Create a new board.
 
         Input is considered valid when:
         - the name is unique
@@ -66,8 +67,8 @@ class BoardsApi(APIView):
     class OutputSerializer(serializers.Serializer[Any]):
         name = serializers.CharField()
 
-    @swagger_auto_schema(responses={200: OutputSerializer(many=True)})  # type: ignore
-    def get(self, request: Request) -> Response:
+    @swagger_auto_schema(responses={200: OutputSerializer(many=True)})  # type: ignore[misc]
+    def get(self, request: "Request") -> Response:
         """Retrieve list of boards."""
         filters_serializer = self.FilterSerializer(data=request.query_params)
         filters_serializer.is_valid(raise_exception=True)
@@ -91,13 +92,13 @@ class DetailBoardsApi(APIView):
     class OutputSerializer(serializers.Serializer[Any]):
         name = serializers.CharField()
 
-    @swagger_auto_schema(
+    @swagger_auto_schema(  # type: ignore[misc]
         responses={
             200: OutputSerializer(),
             404: openapi.Response(description="board does not exist"),
         }
-    )  # type: ignore
-    def get(self, request: Request, board_id: int) -> Response:
+    )
+    def get(self, request: "Request", board_id: int) -> Response:  # noqa: ARG002
         """Retrieve board details."""
         board = board_get(board_id=board_id)
         if board is None:
@@ -113,13 +114,12 @@ class JoinBoardsApi(APIView):
 
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request: Request, board_id: int) -> Response:
-        """
-        Join the board as its member.
+    def post(self, request: "Request", board_id: int) -> Response:
+        """Join the board as its member.
 
         If the user is already a board member, nothing happens and 200 is returned.
 
-        Returns
+        Returns:
         -------
         HTTP response with code:
         - 200 if board was found
@@ -142,7 +142,7 @@ class AddAdminsBoardsApi(APIView):
     class InputSerializer(serializers.Serializer[Any]):
         users_to_add = serializers.PrimaryKeyRelatedField(required=True, many=True, queryset=User.objects.all())
 
-    @swagger_auto_schema(  # type: ignore
+    @swagger_auto_schema(  # type: ignore[misc]
         request_body=InputSerializer,
         responses={
             200: openapi.Response(description="users were assigned as admins"),
@@ -150,9 +150,8 @@ class AddAdminsBoardsApi(APIView):
             404: openapi.Response(description="board does not exist"),
         },
     )
-    def post(self, request: Request, board_id: int) -> Response:
-        """
-        Assign users as board administrators.
+    def post(self, request: "Request", board_id: int) -> Response:
+        """Assign users as board administrators.
 
         This action can only be performed by a current board admin. If the user to add is already an admin, nothing
         happens and 200 is returned. If a user to add is not a board member, she/he is cannot be added as an admin.
@@ -179,16 +178,15 @@ class PostsApi(APIView):
         text = serializers.CharField(required=True)
         board = serializers.PrimaryKeyRelatedField(required=False, queryset=Board.objects.all())
 
-    @swagger_auto_schema(  # type: ignore
+    @swagger_auto_schema(  # type: ignore[misc]
         request_body=InputSerializer,
         responses={
             201: openapi.Response(description="post was successfully created"),
             400: openapi.Response(description="input validation failed"),
         },
     )
-    def post(self, request: Request) -> Response:
-        """
-        Create a new post.
+    def post(self, request: "Request") -> Response:
+        """Create a new post.
 
         The user must be a board member.
         Input is considered valid when the text is at least 10 and at maximum 1000 characters long.
@@ -218,8 +216,8 @@ class PostsApi(APIView):
         )
         edited = serializers.BooleanField()
 
-    @swagger_auto_schema(responses={200: OutputSerializer(many=True)})  # type: ignore
-    def get(self, request: Request) -> Response:
+    @swagger_auto_schema(responses={200: OutputSerializer(many=True)})  # type: ignore[misc]
+    def get(self, request: "Request") -> Response:
         """Retrieve list of posts."""
         filters_serializer = self.FilterSerializer(data=request.query_params)
         filters_serializer.is_valid(raise_exception=True)
@@ -250,13 +248,13 @@ class DetailPostsApi(APIView):
         )
         edited = serializers.BooleanField()
 
-    @swagger_auto_schema(  # type: ignore
+    @swagger_auto_schema(  # type: ignore[misc]
         responses={
             200: OutputSerializer(),
             404: openapi.Response(description="post does not exist"),
         }
     )
-    def get(self, request: Request, post_id: int) -> Response:
+    def get(self, request: "Request", post_id: int) -> Response:  # noqa: ARG002
         """Retrieve post details."""
         post = post_get(post_id=post_id)
         if post is None:
@@ -269,7 +267,7 @@ class DetailPostsApi(APIView):
     class InputSerializer(serializers.Serializer[Any]):
         text = serializers.CharField(required=True)
 
-    @swagger_auto_schema(  # type: ignore
+    @swagger_auto_schema(  # type: ignore[misc]
         responses={
             200: openapi.Response(description="post was updated"),
             400: openapi.Response(description="validation failed"),
@@ -277,7 +275,7 @@ class DetailPostsApi(APIView):
             404: openapi.Response(description="post does not exist"),
         }
     )
-    def patch(self, request: Request, post_id: int) -> Response:
+    def patch(self, request: "Request", post_id: int) -> Response:
         """Update post."""
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -290,14 +288,14 @@ class DetailPostsApi(APIView):
 
         return Response(status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(  # type: ignore
+    @swagger_auto_schema(  # type: ignore[misc]
         responses={
             204: openapi.Response(description="post was deleted"),
             403: openapi.Response(description="user is not the post creator"),
             404: openapi.Response(description="post does not exist"),
         }
     )
-    def delete(self, request: Request, post_id: int) -> Response:
+    def delete(self, request: "Request", post_id: int) -> Response:
         """Delete post."""
         post = post_get(post_id=post_id)
         if post is None:
@@ -317,18 +315,19 @@ class CommentsApi(APIView):
         text = serializers.CharField(required=True)
         post = serializers.PrimaryKeyRelatedField(required=True, queryset=Post.objects.all())
         # Mypy errors are ignored here because base class Field also has a field called parent
-        parent = serializers.PrimaryKeyRelatedField(required=False, queryset=Comment.objects.all())  # type:ignore
+        parent = serializers.PrimaryKeyRelatedField(
+            required=False, queryset=Comment.objects.all()
+        )  # type:ignore[assignment]
 
-    @swagger_auto_schema(  # type: ignore
+    @swagger_auto_schema(  # type: ignore[misc]
         request_body=InputSerializer,
         responses={
             201: openapi.Response(description="comment was successfully created"),
             400: openapi.Response(description="input validation failed"),
         },
     )
-    def post(self, request: Request) -> Response:
-        """
-        Create a new comment.
+    def post(self, request: "Request") -> Response:
+        """Create a new comment.
 
         The user must be a board member.
         Input is considered valid when the comment is at least 1 and at maximum 1000 characters long.
@@ -347,7 +346,9 @@ class CommentsApi(APIView):
         text = serializers.CharField(required=False)
         post = serializers.PrimaryKeyRelatedField(required=False, queryset=Post.objects.all())
         # Mypy errors are ignored here because base class Field also has a field called parent
-        parent = serializers.PrimaryKeyRelatedField(required=False, queryset=Comment.objects.all())  # type:ignore
+        parent = serializers.PrimaryKeyRelatedField(
+            required=False, queryset=Comment.objects.all()
+        )  # type: ignore[assignment]
 
     class OutputSerializer(serializers.Serializer[Any]):
         text = serializers.CharField()
@@ -359,11 +360,11 @@ class CommentsApi(APIView):
         )
         parent_id = serializers.IntegerField()
 
-    @swagger_auto_schema(  # type: ignore
+    @swagger_auto_schema(  # type: ignore[misc]
         responses={200: OutputSerializer(many=True)},
         query_serializer=FilterSerializer(),
     )
-    def get(self, request: Request) -> Response:
+    def get(self, request: "Request") -> Response:
         """Retrieve list of comments."""
         filters_serializer = self.FilterSerializer(data=request.query_params)
         filters_serializer.is_valid(raise_exception=True)
@@ -394,13 +395,13 @@ class DetailCommentsApi(APIView):
         )
         parent_id = serializers.IntegerField()
 
-    @swagger_auto_schema(  # type: ignore
+    @swagger_auto_schema(  # type: ignore[misc]
         responses={
             200: OutputSerializer(),
             404: openapi.Response(description="comment does not exist"),
         }
     )
-    def get(self, request: Request, comment_id: int) -> Response:
+    def get(self, request: "Request", comment_id: int) -> Response:  # noqa: ARG002
         """Retrieve comment details."""
         comment = comment_get(comment_id=comment_id)
         if comment is None:

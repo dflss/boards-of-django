@@ -11,16 +11,16 @@ class UserManager(BaseUserManager["User"]):
     Contains methods that run validation and create users.
     """
 
-    def create_user(
+    def create_user(  # noqa: PLR0913
         self,
+        *,
         email: str,
         username: str,
         password: str,
         is_active: bool = True,
         is_admin: bool = False,
     ) -> "User":
-        """
-        Create and save user instance in database.
+        """Create and save user instance in database.
 
         Parameters
         ----------
@@ -30,7 +30,7 @@ class UserManager(BaseUserManager["User"]):
         is_active : Indicates if user is active
         is_admin : Indicates if user has administrative privileges
 
-        Returns
+        Returns:
         -------
         User
 
@@ -53,8 +53,7 @@ class UserManager(BaseUserManager["User"]):
         return user
 
     def create_superuser(self, email: str, username: str, password: str) -> "User":
-        """
-        Create and save superuser instance in database.
+        """Create and save superuser instance in database.
 
         Parameters
         ----------
@@ -62,7 +61,7 @@ class UserManager(BaseUserManager["User"]):
         username : User's username
         password : User's password
 
-        Returns
+        Returns:
         -------
         User
 
@@ -82,10 +81,9 @@ class UserManager(BaseUserManager["User"]):
 
 
 class User(TimestampedModel, AbstractBaseUser, PermissionsMixin):
-    """
-    User model used across the app.
+    """User model used across the app.
 
-    Attributes
+    Attributes:
     ----------
     email : User's email address
     username : User's username
@@ -112,6 +110,7 @@ class User(TimestampedModel, AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "username"
 
     def __str__(self) -> str:
+        """Return user email."""
         return self.email
 
     def is_staff(self) -> bool:
@@ -120,10 +119,9 @@ class User(TimestampedModel, AbstractBaseUser, PermissionsMixin):
 
 
 class ConfirmationOTP(TimestampedModel):
-    """
-    Confirmation one-time password used to activate user's account after registration.
+    """Confirmation one-time password used to activate user's account after registration.
 
-    Attributes
+    Attributes:
     ----------
     user : User who registered
     otp : One time password used to verify email address
@@ -131,6 +129,6 @@ class ConfirmationOTP(TimestampedModel):
 
     user = models.OneToOneField(User, related_name="confirmation_otps", on_delete=models.CASCADE)
     otp = ShortUUIDField(
-        length=4,  # type: ignore
-        alphabet="0123456789",  # type: ignore
+        length=4,  # type: ignore[arg-type]
+        alphabet="0123456789",  # type: ignore[arg-type]
     )

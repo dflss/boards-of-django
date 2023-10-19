@@ -63,7 +63,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/django/Dockerfile
-    command: celery -A tasks worker -l info
+    command: celery -A boards_of_django.tasks worker -l info
     volumes:
       - ".:/usr/src/app"
     env_file:

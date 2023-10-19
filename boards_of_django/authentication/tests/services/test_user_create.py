@@ -4,7 +4,7 @@ from boards_of_django.authentication.models import ConfirmationOTP
 from boards_of_django.authentication.services import create_user
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_user_is_created_inactive() -> None:
     user = create_user(
         email="test@example.com", username="test", password="strongPassword!", password2="strongPassword!"
@@ -13,7 +13,7 @@ def test_user_is_created_inactive() -> None:
     assert not user.is_active
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_when_creating_user_confirmation_otp_is_created() -> None:
     user = create_user(
         email="test@example.com", username="test", password="strongPassword!", password2="strongPassword!"
