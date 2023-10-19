@@ -124,6 +124,9 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.django.base"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = [
+    "--cov-report=term-missing",
+]
 
 [tool.coverage.run]
 omit = [
