@@ -5,9 +5,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from factory import Faker, SubFactory, fuzzy
 
-from authentication.models import ConfirmationOTP
-from authentication.models import User as UserType
-from boards.models import Board, Comment, Post
+from boards_of_django.authentication.models import ConfirmationOTP
+from boards_of_django.authentication.models import User as UserType
+from boards_of_django.boards.models import Board, Comment, Post
 
 User = get_user_model()
 

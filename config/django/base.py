@@ -31,10 +31,10 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 LOCAL_APPS = [
-    "authentication.apps.AuthenticationConfig",
-    "boards.apps.BoardsConfig",
-    "common.apps.CommonConfig",
-    "tasks.apps.TasksConfig",
+    "boards_of_django.authentication.apps.AuthenticationConfig",
+    "boards_of_django.boards.apps.BoardsConfig",
+    "boards_of_django.common.apps.CommonConfig",
+    "boards_of_django.tasks.apps.TasksConfig",
 ]
 
 THIRD_PARTY_APPS = [
@@ -151,7 +151,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ],
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
-    "EXCEPTION_HANDLER": "common.utils.raise_django_exception_as_drf_exception",
+    "EXCEPTION_HANDLER": "boards_of_django.common.utils.raise_django_exception_as_drf_exception",
 }
 
 APP_DOMAIN = env("APP_DOMAIN", default="http://localhost:8000")
